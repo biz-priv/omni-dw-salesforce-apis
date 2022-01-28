@@ -1,2 +1,3 @@
-# omni-dw-salesforce-apis
-omni-dw-salesforce-apis
+# omni-corsair-report
+
+Email the Corsair Report to the customer on a daily basis

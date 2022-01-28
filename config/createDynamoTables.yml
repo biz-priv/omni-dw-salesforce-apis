@@ -1,0 +1,25 @@
+CreateDynamoTables:
+  handler: src/CreateDynamoTables/index.handler
+  layers:
+    - { Ref: CommonLibsLambdaLayer }  
+  environment:
+    DEFAULT_AWS: ${self:provider.region}
+    PARENT_ACCOUNT_DYNAMO_TABLE: ${ssm:/omni-dw/salesforce/${self:provider.stage}/dynamoDb/table/parentAccount}
+    CHILD_ACCOUNT_DYNAMO_TABLE: ${ssm:/omni-dw/salesforce/${self:provider.stage}/dynamoDb/table/childAccount}
+    SALE_FORECAST_DYNAMO_TABLE: ${ssm:/omni-dw/salesforce/${self:provider.stage}/dynamoDb/table/salesForecast}
+    
+  package:
+    individually: true
+    include:
+        - 'src/CreateDynamoTables/**'
+        - 'src/shared/**'
+  vpc:
+    securityGroupIds:
+      - ${ssm:/omni-dw/${self:provider.stage}/lambda/sgId}
+    subnetIds:
+      - ${ssm:/omni-dw/${self:provider.stage}/lambda/subnetA}
+  events:
+    - http:
+        path: /
+        method: get
+        cors: true

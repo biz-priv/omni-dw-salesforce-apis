@@ -1,0 +1,48 @@
+SalesForceApi:
+  handler: src/SalesForceApi/index.handler
+  layers:
+    - { Ref: CommonLibsLambdaLayer }  
+  environment:
+    DB_PORT: ${ssm:/omni-dw/${self:provider.stage}/db/port}
+    DB_HOST: ${ssm:/omni-dw/${self:provider.stage}/db/host~true}
+    DB_PASSWORD: ${ssm:/omni-dw/${self:provider.stage}/db/password~true}   
+    DB_DATABASE: ${ssm:/omni-dw/${self:provider.stage}/corsair/db/name~true}
+    DB_USER: ${ssm:/omni-dw/${self:provider.stage}/db/user~true}
+    DEFAULT_AWS: ${self:provider.region}
+    CHILD_RECORD_TYPE_ID: ${ssm:/omni-dw/salesforce/${self:provider.stage}/recordId/child}
+    PARENT_RECORDS_TYPE_ID: ${ssm:/omni-dw/salesforce/${self:provider.stage}/recordId/parent}
+    PARENT_ACCOUNT_DYNAMO_TABLE: ${ssm:/omni-dw/salesforce/${self:provider.stage}/dynamoDb/table/parentAccount}
+    CHILD_ACCOUNT_DYNAMO_TABLE: ${ssm:/omni-dw/salesforce/${self:provider.stage}/dynamoDb/table/childAccount}
+    SALE_FORECAST_DYNAMO_TABLE: ${ssm:/omni-dw/salesforce/${self:provider.stage}/dynamoDb/table/salesForecast}
+    FETCH_CHILD_ACCOUNT_BASE_URL: ${ssm:/omni-dw/salesforce/${self:provider.stage}/baseUrl/fetchChild}
+    TOKEN_BASE_URL: ${ssm:/omni-dw/salesforce/${self:provider.stage}/baseUrl/token}
+    PARENT_ACCOUNT_BASE_URL: ${ssm:/omni-dw/salesforce/${self:provider.stage}/baseUrl/parent}
+    OWNER_USER_ID_BASE_URL: ${ssm:/omni-dw/salesforce/${self:provider.stage}/baseUrl/ownerUserId}
+    CHILD_ACCOUNT_BASE_URL: ${ssm:/omni-dw/salesforce/${self:provider.stage}/baseUrl/child}
+    SALES_FORECAST_RECORD_ID_BASE_URL: ${ssm:/omni-dw/salesforce/${self:provider.stage}/baseUrl/salesForecastRecordId}
+    UPSERT_SALES_FORECAST_DETAILS_BASE_URL: ${ssm:/omni-dw/salesforce/${self:provider.stage}/baseUrl/salesForecastDetails}
+    TIMESTAMP_SSM_PARAMETER: /omni-dw/salesforce/${self:provider.stage}/db/tables/latest/timestamp
+    SMTP_HOST: ${ssm:/omni-dw/${self:provider.stage}/smtp/host~true}
+    SMTP_PORT: ${ssm:/omni-dw/${self:provider.stage}/smtp/port~true}
+    SMTP_USER: ${ssm:/omni-dw/${self:provider.stage}/smtp/user~true}
+    SMTP_PASSWORD: ${ssm:/omni-dw/${self:provider.stage}/smtp/password~true}
+    SMTP_SENDER: ${ssm:/omni-dw/${self:provider.stage}/smtp/sender~true}
+    SMTP_RECEIVER: ${ssm:/omni-dw/${self:provider.stage}/smtp/receiver~true}
+
+
+  package:
+    individually: true
+    include:
+        - 'src/CorsairReport/**'
+        - 'src/shared/**'
+  vpc:
+    securityGroupIds:
+      - ${ssm:/omni-dw/${self:provider.stage}/lambda/sgId}
+    subnetIds:
+      - ${ssm:/omni-dw/${self:provider.stage}/lambda/subnetA}
+      
+  events:
+    - http:
+        path: salesForceApi
+        method: post
+        cors: true
