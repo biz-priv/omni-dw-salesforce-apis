@@ -12,14 +12,14 @@ CreateDynamoTables:
     individually: true
     include:
         - 'src/CreateDynamoTables/**'
-        - 'src/shared/**'
+        - 'src/shared/utils/**'
   vpc:
     securityGroupIds:
       - ${ssm:/omni-dw/${self:provider.stage}/lambda/sgId}
     subnetIds:
       - ${ssm:/omni-dw/${self:provider.stage}/lambda/subnetA}
-  events:
-    - http:
-        path: /
-        method: get
-        cors: true
+  # events:
+  #   - http:
+  #       path: /
+  #       method: get
+  #       cors: true

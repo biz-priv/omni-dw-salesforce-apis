@@ -1,4 +1,4 @@
-service: omni-corsair-report
+service: omni-dw
 
 provider:
   name: aws
@@ -6,7 +6,7 @@ provider:
   region: ${opt:region, 'us-east-1'}
   stage: ${opt:stage, 'dev'}
   memorySize: 128 
-  timeout: 900
+  timeout: 30
   role : ${ssm:/omni-dw/${self:provider.stage}/lambda/role}
   environment:
     stage: ${self:provider.stage}

@@ -41,8 +41,8 @@ SalesForceApi:
     subnetIds:
       - ${ssm:/omni-dw/${self:provider.stage}/lambda/subnetA}
       
-  events:
-    - http:
-        path: salesForceApi
-        method: post
-        cors: true
+  # events:
+  #   - http:
+  #       path: salesForceApi
+  #       method: post
+  #       cors: true
