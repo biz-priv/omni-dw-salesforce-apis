@@ -33,7 +33,7 @@ SalesForceApi:
   package:
     individually: true
     include:
-        - 'src/CorsairReport/**'
+        - 'src/SalesForceApi/**'
         - 'src/shared/**'
   vpc:
     securityGroupIds:
