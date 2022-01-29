@@ -94,10 +94,9 @@ module.exports.handler = async (event) => {
             password: process.env.DB_PASSWORD,
         });
         await client.connect();
-        let sqlQuery = `select * from datamart.sf_sales_summary where year >= '2022' and (load_create_date >= '${queryTime}' or load_update_date >= '${queryTime}' )`;
+        let sqlQuery = `select * from datamart.sf_sales_summary where year = '2022' and (load_create_date >= '${queryTime}' or load_update_date >= '${queryTime}' ) limit 5`;
         let dbResponse = await client.query(sqlQuery);
         let result = dbResponse.rows;
-
         await client.end();
         if (!result.length) {
             console.info("No Records Found");
@@ -188,11 +187,51 @@ module.exports.handler = async (event) => {
             };
 
             // console.info("Child Account Params : \n" + JSON.stringify(childAccountBody));
-            let createChildAccountRes = await createChildAccount(CHILD_ACCOUNT_URL, childAccountBody, options, childDataExcellObj);
+            const [createChildAccountRes,createChildExecutionStatus] = await createChildAccount(CHILD_ACCOUNT_URL, childAccountBody, options);
             // console.info("createChildAccountRes :\n", createChildAccountRes);
-            let childDynamoData = {};
-            let saleForecastData = {};
-            if (createChildAccountRes != false) {
+            let childDynamoData = {
+                PutRequest: {
+                    Item: {
+                        req_Name: childName,
+                        req_Source_System__c: sourceSystem,
+                        req_OwnerId: ownerId,
+                        req_BillingStreet: billingStreet,
+                        req_BillingCity: city,
+                        req_BillingState: state,
+                        req_BillingCountry: country,
+                        req_BillingPostalCode: postalCode,
+                        req_Bill_To_Only__c: true,
+                        req_Controlling_Only__c: true,
+                        req_Bill_To_Number__c: billToNumber,
+                        req_Controlling_Number__c: controllingCustomerNumber,
+                        req_ParentId: parentDataId,
+                        req_RecordTypeId: CHILD_ACCOUNT_RECORD_TYPE_ID,
+                        res_child_account_id: "Null",
+                        api_insert_Status: false,
+                        created_At: createdAt
+                    }
+                }
+            };
+            let customerUniqueId = `${sourceSystem}${billToNumber}${controllingCustomerNumber}${year}${month}`;
+            let saleForecastData = {
+                PutRequest: {
+                    Item: {
+                        unique_Record_ID: customerUniqueId,
+                        req_Name: `${childName} ${year} ${month}`,
+                        req_Year__c: year,
+                        req_Month__c: month,
+                        req_Date__c: `${year}-${month}-01`,
+                        req_Total_Charge__c: totalCharge,
+                        req_Total_Cost__c: totalCost,
+                        req_Sales_Forecast__c: "Null",
+                        res_Sale_Forcast_Id: "Null",
+                        res_Forcast_Data: "Null",
+                        api_insert_Status: false,
+                        created_At: createdAt
+                    }
+                }
+            };
+            if (createChildExecutionStatus != false) {
                 childDynamoData = {
                     PutRequest: {
                         Item: {
@@ -216,19 +255,11 @@ module.exports.handler = async (event) => {
                         }
                     }
                 }
-
-                // parent objects for excel sheets 
-
-
-                // console.info("Child Dynamo Data : \n", childDynamoData)
-
                 let selecselectedSaleForcastIdEndpoint = `${sourceSystem}${billToNumber}${controllingCustomerNumber}${year}`;
-                let selectedSaleForcastId = await fetchSalesForecastRecordId(options, selecselectedSaleForcastIdEndpoint, SALES_FORECAST_RECORD_ID_URL);
-                // console.info("selectedSaleForcastId : \n", JSON.stringify(selectedSaleForcastId));
-                if (selectedSaleForcastId != null) {
-                    customerUniqueId = `${sourceSystem}${billToNumber}${controllingCustomerNumber}${year}${month}`;
-                    let upsertSalesForecastDetail = await upsertSalesForecastDetails(options, customerUniqueId, childName, year, month, totalCharge, totalCost, selectedSaleForcastId, UPSERT_SALES_FORECAST_DETAILS_BASE_URL, forecastDataExcellObj);
-                    if (upsertSalesForecastDetail != false) {
+                const [selectedSaleForcastId,fetchSalesForecastIdStatus] = await fetchSalesForecastRecordId(options, selecselectedSaleForcastIdEndpoint, SALES_FORECAST_RECORD_ID_URL);
+                if (fetchSalesForecastIdStatus != false) {
+                    const [upsertSalesForecastDetail,upsertForecastStatus, upsertForecastPayload] = await upsertSalesForecastDetails(options, customerUniqueId, childName, year, month, totalCharge, totalCost, selectedSaleForcastId, UPSERT_SALES_FORECAST_DETAILS_BASE_URL, forecastDataExcellObj);
+                    if (upsertForecastStatus != false) {
                         saleForecastData = {
                             PutRequest: {
                                 Item: {
@@ -249,13 +280,12 @@ module.exports.handler = async (event) => {
                         parentDataExcellObj = {};
                         childDataExcellObj = {};
                         forecastDataExcellObj = {};
-
-
                     }
                     else {
                         saleForecastData = {
                             PutRequest: {
                                 Item: {
+                                    unique_Record_ID: customerUniqueId,
                                     req_Name: `${childName} ${year} ${month}`,
                                     req_Year__c: year,
                                     req_Month__c: month,
@@ -263,42 +293,26 @@ module.exports.handler = async (event) => {
                                     req_Total_Charge__c: totalCharge,
                                     req_Total_Cost__c: totalCost,
                                     req_Sales_Forecast__c: selectedSaleForcastId,
-                                    res_Sale_Forcast_Id: "Null",
-                                    res_Forcast_Data: "Null",
+                                    res_Sale_Forcast_Id: selectedSaleForcastId,
+                                    res_Forcast_Data: upsertSalesForecastDetail,
                                     api_insert_Status: false,
                                     created_At: createdAt
                                 }
                             }
                         }
 
-                        parentDataExcellArr.push(parentDataExcellObj);
-                        childDataExcellArr.push(childDataExcellObj);
+                        forecastDataExcellObj['Status'] = "Failed";
+                        forecastDataExcellObj['Request Params'] = upsertForecastPayload;
+                        forecastDataExcellObj['Response'] = upsertSalesForecastDetail;
                         forecastDataExcellArr.push(forecastDataExcellObj);
 
                         // console.info("Unable to send Forecast Detail Payload : " + JSON.stringify(saleForecastData));
                     }
                 }
                 else {
-                    saleForecastData = {
-                        PutRequest: {
-                            Item: {
-                                req_Name: `${childName} ${year} ${month}`,
-                                req_Year__c: year,
-                                req_Month__c: month,
-                                req_Date__c: `${year}-${month}-01`,
-                                req_Total_Charge__c: totalCharge,
-                                req_Total_Cost__c: totalCost,
-                                req_Sales_Forecast__c: "Null",
-                                res_Sale_Forcast_Id: "Null",
-                                res_Forcast_Data: "Null",
-                                api_insert_Status: false,
-                                created_At: createdAt
-                            }
-                        }
-                    }
-
-                    forecastDataExcellObj['Status'] = "failed";
+                    forecastDataExcellObj['Status'] = "Failed";
                     forecastDataExcellObj['Request Params'] = {
+                        unique_Record_ID: customerUniqueId,
                         req_Name: `${childName} ${year} ${month}`,
                         req_Year__c: year,
                         req_Month__c: month,
@@ -308,60 +322,17 @@ module.exports.handler = async (event) => {
                         api_insert_Status: false,
                         created_At: createdAt
                     };
-                    forecastDataExcellObj['Response'] = {
-                        req_Sales_Forecast__c: "Null",
-                        res_Sale_Forcast_Id: "Null",
-                        res_Forcast_Data: "Null"
-                    };
-
-                    parentDataExcellArr.push(parentDataExcellObj);
-                    childDataExcellArr.push(childDataExcellObj);
+                    forecastDataExcellObj['Response'] = selectedSaleForcastId;
                     forecastDataExcellArr.push(forecastDataExcellObj);
 
                     // console.info("Unable to send Forecast Detail Payload : " + JSON.stringify(saleForecastData));
                 }
             }
             else {
-                childDynamoData = {
-                    PutRequest: {
-                        Item: {
-                            req_Name: childName,
-                            req_Source_System__c: sourceSystem,
-                            req_OwnerId: ownerId,
-                            req_BillingStreet: billingStreet,
-                            req_BillingCity: city,
-                            req_BillingState: state,
-                            req_BillingCountry: country,
-                            req_BillingPostalCode: postalCode,
-                            req_Bill_To_Only__c: true,
-                            req_Controlling_Only__c: true,
-                            req_Bill_To_Number__c: billToNumber,
-                            req_Controlling_Number__c: controllingCustomerNumber,
-                            req_ParentId: parentDataId,
-                            req_RecordTypeId: CHILD_ACCOUNT_RECORD_TYPE_ID,
-                            res_child_account_id: "Null",
-                            api_insert_Status: false,
-                            created_At: createdAt
-                        }
-                    }
-                }
-                // console.info("Child Dynamo Data : \n", childDynamoData);
-
-                forecastDataExcellObj['Status'] = "failed";
-                forecastDataExcellObj['Request Params'] = {
-                    "Name": `${childName} ${year} ${month}`,
-                    "Year__c": year,
-                    "Month__c": month,
-                    "Date__c": `${year}-${month}-01`,
-                    "Total_Charge__c": totalCharge,
-                    "Total_Cost__c": totalCost,
-                    "Sales_Forecast__c": "Null"
-                }
-                forecastDataExcellObj['Response'] = "Null";
-
-                parentDataExcellArr.push(parentDataExcellObj);
+                childDataExcellObj['Status'] = "Failed";
+                childDataExcellObj['Request Params'] = childAccountBody
+                childDataExcellObj['Response'] = createChildAccountRes;
                 childDataExcellArr.push(childDataExcellObj);
-                forecastDataExcellArr.push(forecastDataExcellObj);
             }
 
             if (!childReqNamesArr.includes(childName) && !childParentIdsArr.includes(parentDataId)) {
@@ -418,7 +389,7 @@ module.exports.handler = async (event) => {
             Dynamo.itemInsert(CHILD_ACCOUNT_TABLE, childDataArr),
             Dynamo.itemInsert(SALE_FORECAST_TABLE, forecastDetailsArr)
         ]);
-        await EXCEL.itemInsertintoExcel(parentDataArr, childDataArr);
+        await EXCEL.itemInsertintoExcel(parentDataExcellArr, childDataExcellArr,forecastDataExcellArr);
         await SENDEMAIL.sendEmail();
         createdAt = new Date().toISOString();
         // let updateTimestamp = await SSM.updateLatestTimestampToSSM(createdAt);
@@ -461,18 +432,14 @@ async function getOwnerID(OWNER_USER_ID_BASE_URL, options, owner) {
 
 }
 
-async function createChildAccount(CHILD_ACCOUNT_URL, childAccountBody, options, childDataExcellObj) {
+async function createChildAccount(CHILD_ACCOUNT_URL, childAccountBody, options) {
     let resChildAccountId = "";
     try {
         const createChildAccountReq = await axios.patch(CHILD_ACCOUNT_URL, childAccountBody, options);
         // console.info("Child Account Response: \n", createChildAccountReq.data);
         resChildAccountId = createChildAccountReq.data.id;
-        childDataExcellObj['Status'] = 'success';
-        childDataExcellObj['Request Params'] = childAccountBody;
-        childDataExcellObj['Response'] = createChildAccountReq.data;
-        return resChildAccountId;
+        return [resChildAccountId,true];
     } catch (error) {
-
         // console.error("Error : \n" + error.response.data);
         if (error.response.data.length >= 1) {
             let errorResponse = error.response.data[0];
@@ -488,24 +455,20 @@ async function createChildAccount(CHILD_ACCOUNT_URL, childAccountBody, options, 
                     if (checkExistingAccount.length > 0) {
 
                         resChildAccountId = childAccountId;
-                        return resChildAccountId;
+                        return [resChildAccountId,true];
                     }
                 } catch (newError) {
                     console.error("Error : \n" + newError);
-                    return false;
+                    return [newError,false];
                     // return send_response(401, newError);
                 }
             }
         }
         else {
-            childDataExcellObj['Status'] = 'failed';
-            childDataExcellObj['Response'] = error;
-            return false;
+            return [error.response,false];
             // console.error("Error : \n", error);
         }
-        childDataExcellObj['Status'] = 'failed';
-        childDataExcellObj['Response'] = error.response;
-        return false;
+        return [error.response,false];
         // return send_response(400, error);
     }
 }
@@ -543,42 +506,37 @@ async function fetchSalesForecastRecordId(options, selecselectedSaleForcastIdEnd
         // console.info("Sales Forecast Id Response : \n", forecastRecordsData);
         let forecastId = forecastRecordsData['data']['Id'] ? forecastRecordsData['data']['Id'] : null;
         // console.info("Forecast ID : \n", JSON.stringify(forecastId));
-        return forecastId;
+        return [forecastId,true];
         // return (validateForecastRecordsData(forecastRecordsData) ? forecastRecordsData['data']['Id'] : null);
     } catch (error) {
         // console.error("Error from sale forecast record fetch id api: ", error);
-        return null;
+        return [JSON.stringify(error), false];
     }
 }
 
-async function upsertSalesForecastDetails(options, customerUniqueId, childAccountName, year, month, totalCharge, totalCost, selectedSaleForcastId, UPSERT_SALES_FORECAST_DETAILS_BASE_URL, forecastDataExcellObj) {
+async function upsertSalesForecastDetails(options, customerUniqueId, childAccountName, year, month, totalCharge, totalCost, selectedSaleForcastId, UPSERT_SALES_FORECAST_DETAILS_BASE_URL) {
+    
+    let upsertSalesForecastDetailBody = {
+        "Name": `${childAccountName} ${year} ${month}`,
+        "Year__c": year,
+        "Month__c": month,
+        "Date__c": `${year}-${month}-01`,
+        "Total_Charge__c": totalCharge,
+        "Total_Cost__c": totalCost,
+        "Sales_Forecast__c": selectedSaleForcastId
+    };
+
     try {
         let upsertSalesForecastDetailUrl = UPSERT_SALES_FORECAST_DETAILS_BASE_URL + customerUniqueId;
         // console.info("Upsert Sales Forecast Detail Url : \n", JSON.stringify(upsertSalesForecastDetailUrl));
-        let upsertSalesForecastDetailBody = {
-            "Name": `${childAccountName} ${year} ${month}`,
-            "Year__c": year,
-            "Month__c": month,
-            "Date__c": `${year}-${month}-01`,
-            "Total_Charge__c": totalCharge,
-            "Total_Cost__c": totalCost,
-            "Sales_Forecast__c": selectedSaleForcastId
-        };
+        
         // console.info("Upsert Sales Forcast Params : \n" + JSON.stringify(upsertSalesForecastDetailBody));
         let upsertSalesForecastDetail = await axios.patch(upsertSalesForecastDetailUrl, upsertSalesForecastDetailBody, options);
         // console.info("Upsert Sales Forcast Response : \n" + JSON.stringify(upsertSalesForecastDetail.data));
-
-        forecastDataExcellObj['Status'] = "success";
-        forecastDataExcellObj['Request Params'] = upsertSalesForecastDetailBody;
-        forecastDataExcellObj['Response'] = upsertSalesForecastDetail.data;
-
-        return upsertSalesForecastDetail.data;
+        return [upsertSalesForecastDetail.data,true,upsertSalesForecastDetailBody];
     }
     catch (error) {
         // console.error("Error from sale forecast api: " + JSON.stringify(error));
-        forecastDataExcellObj['Status'] = "failed";
-        forecastDataExcellObj['Request Params'] = upsertSalesForecastDetailBody;
-        forecastDataExcellObj['Response'] = error;
-        return false;
+        return [JSON.stringify(error),false,upsertSalesForecastDetailBody];
     }
 }

@@ -7,9 +7,9 @@ function generateExcelSheet(array, worksheet, styleForData) {
     for (let i in array) {
         let o = 1;
         //This depends on numbers of columns to fill.
-        worksheet.cell(row, o).string(array[i]['PutRequest']['Item']['req_Name']).style(styleForData);
-        worksheet.cell(row, o + 1).string(array[i]['PutRequest']['Item']['req_Name']).style(styleForData);
-        worksheet.cell(row, o + 2).string(array[i]['PutRequest']['Item']['req_Name']).style(styleForData);
+        worksheet.cell(row, o).string(array[i]['Status']).style(styleForData);
+        worksheet.cell(row, o + 1).string(array[i]['Request Params']).style(styleForData);
+        worksheet.cell(row, o + 2).string(array[i]['Response']).style(styleForData);
         row = row + 1;
     }
 }
@@ -20,12 +20,7 @@ async function itemInsertintoExcel(parentDataArr, childDataArr, forecastDetailsA
 
     try {
         console.info('creating sheets')
-        // console.info("Parent Data Arr", JSON.stringify(parentDataArr));
-
-        // console.info("Child DAta Arr", JSON.stringify(childDataArr));
-
-        // console.info("Forecast details arr", JSON.stringify(forecastDetailsArr));
-
+        
         let workbook = new excel.Workbook();
         // Add Worksheets to the workbook
         let worksheet = workbook.addWorksheet('Parent Data');
@@ -67,9 +62,8 @@ async function itemInsertintoExcel(parentDataArr, childDataArr, forecastDetailsA
         worksheet2.cell(1, 3).string('Response').style(style);
 
         generateExcelSheet(parentDataArr, worksheet, styleForData);
-
         generateExcelSheet(childDataArr, worksheet1, styleForData)
-        // generateExcelSheet(forecastDetailsArr, worksheet2, styleForData)
+        generateExcelSheet(forecastDetailsArr, worksheet2, styleForData)
         workbook.write('/tmp/salesforceFailedRecords.xlsx');
 
     } catch (e) {

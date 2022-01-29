@@ -31,7 +31,7 @@ functions:
 
 stepFunctions:
   stateMachines:
-    test-salesforce-state-machine: ${file(config/StepFunctions/SalesforceApisStateMachine.yml):stateMachine}
+    test-salesforce-state-machine: ${file(config/SalesforceApisStateMachine.yml):stateMachine}
 
 plugins:
   - serverless-offline
