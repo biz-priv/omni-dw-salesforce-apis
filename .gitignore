@@ -102,3 +102,4 @@ package-lock.json
 *.zip
 yarn.lock
 .DS_Store
+lib/nodejs/package-lock.json
