@@ -42,8 +42,8 @@ SalesForceApi:
       - ${ssm:/omni-dw/${self:provider.stage}/lambda/subnetA}
       
   # events:
-  #   - schedule: cron(0 16 * * ? *)
-  #   - http:
-  #       path: salesForceApi
-  #       method: post
-  #       cors: true
+    # - schedule: cron(0 16 * * ? *)
+    # - http:
+    #     path: salesForceApi
+    #     method: post
+    #     cors: true

@@ -1,4 +1,4 @@
-service: omni-dw
+service: omni-dw-salesforce-apis
 
 provider:
   name: aws
