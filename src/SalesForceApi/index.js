@@ -94,10 +94,9 @@ module.exports.handler = async (event) => {
             password: process.env.DB_PASSWORD,
         });
         await client.connect();
-        let sqlQuery = `select * from datamart.sf_sales_summary where year >= '2022' and (load_create_date >= '${queryTime}' or load_update_date >= '${queryTime}')`;
+        let sqlQuery = `select * from datamart.sf_sales_summary where year >= '2022' and (load_create_date >= '${queryTime}' or load_update_date >= '${queryTime}' )`;
         let dbResponse = await client.query(sqlQuery);
         let result = dbResponse.rows;
-
 
         await client.end();
         if (!result.length) {
@@ -398,10 +397,10 @@ module.exports.handler = async (event) => {
                 forecastDetailsReqNamesArr = [];
                 break;
             }
-            if (count == 5) {
-                break;
-            }
-            count += 1;
+            // if (count == 25) {
+            //     break;
+            // }
+            // count += 1;
         }
 
         // console.info("Parent Data Arr", JSON.stringify(parentDataArr));
@@ -414,18 +413,18 @@ module.exports.handler = async (event) => {
         // console.info("Child Excel Data : \n", childDataExcellArr);
         // console.info("Forecast Excel Data : \n", forecastDataExcellArr);
 
-        // await Promise.all([
-        //     Dynamo.itemInsert(PARENT_ACCOUNT_TABLE, parentDataArr),
-        //     Dynamo.itemInsert(CHILD_ACCOUNT_TABLE, childDataArr),
-        //     Dynamo.itemInsert(SALE_FORECAST_TABLE, forecastDetailsArr)
-        // ]);
+        await Promise.all([
+            Dynamo.itemInsert(PARENT_ACCOUNT_TABLE, parentDataArr),
+            Dynamo.itemInsert(CHILD_ACCOUNT_TABLE, childDataArr),
+            Dynamo.itemInsert(SALE_FORECAST_TABLE, forecastDetailsArr)
+        ]);
         await EXCEL.itemInsertintoExcel(parentDataArr, childDataArr);
         await SENDEMAIL.sendEmail();
         createdAt = new Date().toISOString();
         // let updateTimestamp = await SSM.updateLatestTimestampToSSM(createdAt);
         return send_response(200);
     } catch (error) {
-        console.error("Error Error : \n" + JSON.stringify(error));
+        console.error("Error Error : \n" + error);
         return send_response(400, error);
     }
 }

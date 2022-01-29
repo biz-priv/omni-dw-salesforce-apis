@@ -5,11 +5,10 @@
       "name": "omni-dw"
     },
     "provider": {
-      "stage": "dev",
-      "variableSyntax": "\\${([^{}]+?)}",
       "name": "aws",
       "runtime": "nodejs14.x",
       "region": "us-east-1",
+      "stage": "dev",
       "memorySize": 128,
       "timeout": 30,
       "role": "arn:aws:iam::332281781429:role/dw-lambda-redshift-role",
@@ -63,6 +62,21 @@
                             "/*"
                           ]
                         ]
+                      },
+                      {
+                        "Fn::Join": [
+                          "",
+                          [
+                            "arn:",
+                            {
+                              "Ref": "AWS::Partition"
+                            },
+                            ":s3:::",
+                            {
+                              "Ref": "ServerlessDeploymentBucket"
+                            }
+                          ]
+                        ]
                       }
                     ],
                     "Condition": {
@@ -94,7 +108,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/omni-dw/dev/1643355628186-2022-01-28T07:40:28.186Z/commonLibs.zip"
+                "S3Key": "serverless/omni-dw/dev/1643398113975-2022-01-28T19:28:33.975Z/commonLibs.zip"
               },
               "LayerName": "commonLibs",
               "CompatibleRuntimes": [
@@ -109,13 +123,12 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/omni-dw/dev/1643359315732-2022-01-28T08:41:55.732Z/SalesForceApi.zip"
+                "S3Key": "serverless/omni-dw/dev/1643398113975-2022-01-28T19:28:33.975Z/SalesForceApi.zip"
               },
-              "FunctionName": "omni-dw-dev-SalesForceApi",
               "Handler": "src/SalesForceApi/index.handler",
-              "MemorySize": 128,
-              "Role": "arn:aws:iam::332281781429:role/dw-lambda-redshift-role",
               "Runtime": "nodejs14.x",
+              "FunctionName": "omni-dw-dev-SalesForceApi",
+              "MemorySize": 128,
               "Timeout": 30,
               "Environment": {
                 "Variables": {
@@ -147,6 +160,7 @@
                   "SMTP_RECEIVER": "sujit.das@bizcloudexperts.com"
                 }
               },
+              "Role": "arn:aws:iam::332281781429:role/dw-lambda-redshift-role",
               "VpcConfig": {
                 "SecurityGroupIds": [
                   "sg-02f89a176b75daa56"
@@ -165,16 +179,6 @@
               "SalesForceApiLogGroup"
             ]
           },
-          "SalesForceApiLambdaVersionjp5oP0AV12SGBL97YBrzUexkMFZ6ciUCTrnexRjp2Q": {
-            "Type": "AWS::Lambda::Version",
-            "DeletionPolicy": "Retain",
-            "Properties": {
-              "FunctionName": {
-                "Ref": "SalesForceApiLambdaFunction"
-              },
-              "CodeSha256": "+t/T1yruQx984qHKLU47dainO9Nn/0GBLrtQ7ZnyCCY="
-            }
-          },
           "CreateDynamoTablesLambdaFunction": {
             "Type": "AWS::Lambda::Function",
             "Properties": {
@@ -182,13 +186,12 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/omni-dw/dev/1643359315732-2022-01-28T08:41:55.732Z/CreateDynamoTables.zip"
+                "S3Key": "serverless/omni-dw/dev/1643398113975-2022-01-28T19:28:33.975Z/CreateDynamoTables.zip"
               },
-              "FunctionName": "omni-dw-dev-CreateDynamoTables",
               "Handler": "src/CreateDynamoTables/index.handler",
-              "MemorySize": 128,
-              "Role": "arn:aws:iam::332281781429:role/dw-lambda-redshift-role",
               "Runtime": "nodejs14.x",
+              "FunctionName": "omni-dw-dev-CreateDynamoTables",
+              "MemorySize": 128,
               "Timeout": 30,
               "Environment": {
                 "Variables": {
@@ -199,6 +202,7 @@
                   "SALE_FORECAST_DYNAMO_TABLE": "sales_forecast_records"
                 }
               },
+              "Role": "arn:aws:iam::332281781429:role/dw-lambda-redshift-role",
               "VpcConfig": {
                 "SecurityGroupIds": [
                   "sg-02f89a176b75daa56"
@@ -217,7 +221,7 @@
               "CreateDynamoTablesLogGroup"
             ]
           },
-          "CreateDynamoTablesLambdaVersionlFbZlu5zRQJMs7AQfgH7t6VxRWGgfa7Mo1ZkYCEQ": {
+          "CreateDynamoTablesLambdaVersionoZU6EeiwFXLCUPxPvZvVsCEW70GOyS5GeyAksBbQc": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
@@ -226,38 +230,137 @@
               },
               "CodeSha256": "w0C6lj7/Ey+/fxc7YeQOUU3s0UHRfDsY0PsBwOPcA3Q="
             }
+          },
+          "SalesForceApiLambdaVersionToXqfoCWSm8LGWpngjwuIsA2U6ur04bHeIN5U7FY": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "SalesForceApiLambdaFunction"
+              },
+              "CodeSha256": "2SOpQhBs7OVwSU81J3Wx3aJJLBYVldcxA8S2dW0gVo0="
+            }
+          },
+          "OmniDashdwDashsalesForceDashapisDashstateDashmachineRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+              "AssumeRolePolicyDocument": {
+                "Version": "2012-10-17",
+                "Statement": [
+                  {
+                    "Effect": "Allow",
+                    "Principal": {
+                      "Service": {
+                        "Fn::Sub": "states.${AWS::Region}.amazonaws.com"
+                      }
+                    },
+                    "Action": "sts:AssumeRole"
+                  }
+                ]
+              },
+              "Policies": [
+                {
+                  "PolicyName": "dev-omni-dw-statemachine",
+                  "PolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                      {
+                        "Effect": "Allow",
+                        "Action": [
+                          "lambda:InvokeFunction"
+                        ],
+                        "Resource": [
+                          "arn:aws:lambda:us-east-1:332281781429:function:omni-dw-dev-SalesForceApi",
+                          {
+                            "Fn::Sub": [
+                              "${functionArn}:*",
+                              {
+                                "functionArn": "arn:aws:lambda:us-east-1:332281781429:function:omni-dw-dev-SalesForceApi"
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          "OmniDashdwDashsalesForceDashapisDashstateDashmachine": {
+            "Type": "AWS::StepFunctions::StateMachine",
+            "Properties": {
+              "DefinitionString": "{\n  \"Comment\": \"State machine for salesforce Apis integration\",\n  \"StartAt\": \"PublishEvents\",\n  \"States\": {\n    \"PublishEvents\": {\n      \"Type\": \"Task\",\n      \"Resource\": \"arn:aws:lambda:us-east-1:332281781429:function:omni-dw-dev-SalesForceApi\",\n      \"End\": true\n    }\n  }\n}",
+              "RoleArn": {
+                "Fn::GetAtt": [
+                  "OmniDashdwDashsalesForceDashapisDashstateDashmachineRole",
+                  "Arn"
+                ]
+              },
+              "StateMachineName": "omni-dw-salesForce-apis-state-machine"
+            },
+            "DependsOn": [
+              "OmniDashdwDashsalesForceDashapisDashstateDashmachineRole"
+            ]
           }
         },
         "Outputs": {
           "ServerlessDeploymentBucketName": {
             "Value": {
               "Ref": "ServerlessDeploymentBucket"
+            },
+            "Export": {
+              "Name": "sls-omni-dw-dev-ServerlessDeploymentBucketName"
             }
           },
           "CommonLibsLambdaLayerQualifiedArn": {
             "Description": "Current Lambda layer version",
             "Value": {
               "Ref": "CommonLibsLambdaLayer"
+            },
+            "Export": {
+              "Name": "sls-omni-dw-dev-CommonLibsLambdaLayerQualifiedArn"
             }
           },
           "CommonLibsLambdaLayerHash": {
             "Description": "Current Lambda layer hash",
-            "Value": "9d8997dc672bfbd75e277eacc3f9c053b501b850"
+            "Value": "498573765e5cdf078ae7732815b0389f5b55b08a",
+            "Export": {
+              "Name": "sls-omni-dw-dev-CommonLibsLambdaLayerHash"
+            }
           },
           "CommonLibsLambdaLayerS3Key": {
             "Description": "Current Lambda layer S3Key",
-            "Value": "serverless/omni-dw/dev/1643355628186-2022-01-28T07:40:28.186Z/commonLibs.zip"
-          },
-          "SalesForceApiLambdaFunctionQualifiedArn": {
-            "Description": "Current Lambda function version",
-            "Value": {
-              "Ref": "SalesForceApiLambdaVersionjp5oP0AV12SGBL97YBrzUexkMFZ6ciUCTrnexRjp2Q"
+            "Value": "serverless/omni-dw/dev/1643398113975-2022-01-28T19:28:33.975Z/commonLibs.zip",
+            "Export": {
+              "Name": "sls-omni-dw-dev-CommonLibsLambdaLayerS3Key"
             }
           },
           "CreateDynamoTablesLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "CreateDynamoTablesLambdaVersionlFbZlu5zRQJMs7AQfgH7t6VxRWGgfa7Mo1ZkYCEQ"
+              "Ref": "CreateDynamoTablesLambdaVersionoZU6EeiwFXLCUPxPvZvVsCEW70GOyS5GeyAksBbQc"
+            },
+            "Export": {
+              "Name": "sls-omni-dw-dev-CreateDynamoTablesLambdaFunctionQualifiedArn"
+            }
+          },
+          "SalesForceApiLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "SalesForceApiLambdaVersionToXqfoCWSm8LGWpngjwuIsA2U6ur04bHeIN5U7FY"
+            },
+            "Export": {
+              "Name": "sls-omni-dw-dev-SalesForceApiLambdaFunctionQualifiedArn"
+            }
+          },
+          "OmniDashdwDashsalesForceDashapisDashstateDashmachineArn": {
+            "Description": "Current StateMachine Arn",
+            "Value": {
+              "Ref": "OmniDashdwDashsalesForceDashapisDashstateDashmachine"
+            },
+            "Export": {
+              "Name": "sls-omni-dw-dev-OmniDashdwDashsalesForceDashapisDashstateDashmachineArn"
             }
           }
         }
@@ -308,6 +411,21 @@
                             "/*"
                           ]
                         ]
+                      },
+                      {
+                        "Fn::Join": [
+                          "",
+                          [
+                            "arn:",
+                            {
+                              "Ref": "AWS::Partition"
+                            },
+                            ":s3:::",
+                            {
+                              "Ref": "ServerlessDeploymentBucket"
+                            }
+                          ]
+                        ]
                       }
                     ],
                     "Condition": {
@@ -339,7 +457,8 @@
     },
     "plugins": [
       "serverless-offline",
-      "serverless-prune-plugin"
+      "serverless-prune-plugin",
+      "serverless-step-functions"
     ],
     "pluginsData": {},
     "functions": {
@@ -378,7 +497,7 @@
         "package": {
           "individually": true,
           "include": [
-            "src/CorsairReport/**",
+            "src/SalesForceApi/**",
             "src/shared/**"
           ],
           "artifact": "/Users/apple/Desktop/Biz-Cloud/omni-dw-salesforce-apis/.serverless/SalesForceApi.zip"
@@ -396,7 +515,7 @@
         "memory": 128,
         "timeout": 30,
         "runtime": "nodejs14.x",
-        "versionLogicalId": "SalesForceApiLambdaVersionjp5oP0AV12SGBL97YBrzUexkMFZ6ciUCTrnexRjp2Q"
+        "versionLogicalId": "SalesForceApiLambdaVersionToXqfoCWSm8LGWpngjwuIsA2U6ur04bHeIN5U7FY"
       },
       "CreateDynamoTables": {
         "handler": "src/CreateDynamoTables/index.handler",
@@ -430,36 +549,17 @@
         "memory": 128,
         "timeout": 30,
         "runtime": "nodejs14.x",
-        "versionLogicalId": "CreateDynamoTablesLambdaVersionlFbZlu5zRQJMs7AQfgH7t6VxRWGgfa7Mo1ZkYCEQ"
+        "versionLogicalId": "CreateDynamoTablesLambdaVersionoZU6EeiwFXLCUPxPvZvVsCEW70GOyS5GeyAksBbQc"
       }
     },
     "configValidationMode": "warn",
     "serviceFilename": "serverless.yml",
-    "layers": {
-      "commonLibs": {
-        "path": "lib",
-        "compatibleRuntimes": [
-          "nodejs14.x"
-        ],
-        "package": {
-          "artifact": "/Users/apple/Desktop/Biz-Cloud/omni-dw-salesforce-apis/.serverless/commonLibs.zip"
-        },
-        "artifactAlreadyUploaded": true
-      }
-    },
     "initialServerlessConfig": {
-      "service": "omni-dw",
+      "service": {
+        "$ref": "$[\"service\"][\"serviceObject\"]"
+      },
       "provider": {
-        "name": "aws",
-        "runtime": "nodejs14.x",
-        "region": "us-east-1",
-        "stage": "dev",
-        "memorySize": 128,
-        "timeout": 30,
-        "role": "arn:aws:iam::332281781429:role/dw-lambda-redshift-role",
-        "environment": {
-          "stage": "dev"
-        }
+        "$ref": "$[\"service\"][\"provider\"]"
       },
       "custom": {
         "$ref": "$[\"service\"][\"custom\"]"
@@ -473,105 +573,58 @@
           "src/**",
           "*.*"
         ],
-        "artifactDirectoryName": "serverless/omni-dw/dev/1643359315732-2022-01-28T08:41:55.732Z"
+        "artifactDirectoryName": "serverless/omni-dw/dev/1643398113975-2022-01-28T19:28:33.975Z"
       },
-      "functions": [
-        {
-          "SalesForceApi": {
-            "handler": "src/SalesForceApi/index.handler",
-            "layers": [
-              {
-                "Ref": "CommonLibsLambdaLayer"
+      "functions": {
+        "$ref": "$[\"service\"][\"functions\"]"
+      },
+      "stepFunctions": {
+        "stateMachines": {
+          "test-salesforce-state-machine": {
+            "name": "omni-dw-salesForce-apis-state-machine",
+            "definition": {
+              "Comment": "State machine for salesforce Apis integration",
+              "StartAt": "PublishEvents",
+              "States": {
+                "PublishEvents": {
+                  "Type": "Task",
+                  "Resource": "arn:aws:lambda:us-east-1:332281781429:function:omni-dw-dev-SalesForceApi",
+                  "End": true
+                }
               }
-            ],
-            "environment": {
-              "DB_PORT": "5439",
-              "DB_HOST": "10.9.130.79",
-              "DB_PASSWORD": "BizCloudExp1",
-              "DB_DATABASE": "prod_datamodel",
-              "DB_USER": "bceuser1",
-              "DEFAULT_AWS": "us-east-1",
-              "CHILD_RECORD_TYPE_ID": "0128B00000007WJQAY",
-              "PARENT_RECORDS_TYPE_ID": "0128B00000007WKQAY",
-              "PARENT_ACCOUNT_DYNAMO_TABLE": "salesforce_parent_account_records",
-              "CHILD_ACCOUNT_DYNAMO_TABLE": "salesforce_child_accounts_records",
-              "SALE_FORECAST_DYNAMO_TABLE": "sales_forecast_records",
-              "FETCH_CHILD_ACCOUNT_BASE_URL": "/services/data/v53.0/sobjects/Account",
-              "TOKEN_BASE_URL": "https://test.salesforce.com/services/oauth2/token?grant_type=password&client_id=3MVG9MwiKwcReohwD7S1akUYBk4hpvo4cSXMxBGdTyypmZ0WOO6a8PBvfLYh6yzB1x70uJs5zDA==&client_secret=E8C29994EABD68BE28F127C98477FB726024A0D8E429104028DB50DC879D7BC0&username=sandboxsalesforceintegrations@omnilogistics.com.uatfull&password=q*B04Nf5%23@2utJS7Nn3B0kTNZiXPzBLaDVRjW",
-              "PARENT_ACCOUNT_BASE_URL": "/services/data/v53.0/sobjects/Account/Unique_Id__c/",
-              "OWNER_USER_ID_BASE_URL": "/services/data/v53.0/sobjects/User/Unique_Name__c/",
-              "CHILD_ACCOUNT_BASE_URL": "/services/data/v53.0/sobjects/Account/Unique_Id__c/",
-              "SALES_FORECAST_RECORD_ID_BASE_URL": "/services/data/v53.0/sobjects/Sales_Forecast__c/Unique_Id__c/",
-              "UPSERT_SALES_FORECAST_DETAILS_BASE_URL": "/services/data/v53.0/sobjects/Sales_Forecast_Detail__c/Unique_Id__c/",
-              "TIMESTAMP_SSM_PARAMETER": "/omni-dw/salesforce/dev/db/tables/latest/timestamp",
-              "SMTP_HOST": "email-smtp.us-east-1.amazonaws.com",
-              "SMTP_PORT": "587",
-              "SMTP_USER": "AKIAXLP624BLJQ5JICVQ",
-              "SMTP_PASSWORD": "BFzlzKrkZAIdRqFu3BoxO1uGRNCjqGUfEeZN/JpTaIuV",
-              "SMTP_SENDER": "reports@omnilogistics.com",
-              "SMTP_RECEIVER": "sujit.das@bizcloudexperts.com"
-            },
-            "package": {
-              "individually": true,
-              "include": [
-                "src/CorsairReport/**",
-                "src/shared/**"
-              ]
-            },
-            "vpc": {
-              "securityGroupIds": [
-                "sg-02f89a176b75daa56"
-              ],
-              "subnetIds": [
-                "subnet-01b73865bdb44c156"
-              ]
-            }
-          }
-        },
-        {
-          "CreateDynamoTables": {
-            "handler": "src/CreateDynamoTables/index.handler",
-            "layers": [
-              {
-                "Ref": "CommonLibsLambdaLayer"
-              }
-            ],
-            "environment": {
-              "DEFAULT_AWS": "us-east-1",
-              "PARENT_ACCOUNT_DYNAMO_TABLE": "salesforce_parent_account_records",
-              "CHILD_ACCOUNT_DYNAMO_TABLE": "salesforce_child_accounts_records",
-              "SALE_FORECAST_DYNAMO_TABLE": "sales_forecast_records"
-            },
-            "package": {
-              "individually": true,
-              "include": [
-                "src/CreateDynamoTables/**",
-                "src/shared/utils/**"
-              ]
-            },
-            "vpc": {
-              "securityGroupIds": [
-                "sg-02f89a176b75daa56"
-              ],
-              "subnetIds": [
-                "subnet-01b73865bdb44c156"
-              ]
             }
           }
         }
-      ],
+      },
       "plugins": {
         "$ref": "$[\"service\"][\"plugins\"]"
       },
       "layers": {
-        "$ref": "$[\"service\"][\"layers\"]"
+        "commonLibs": {
+          "path": "lib",
+          "compatibleRuntimes": {
+            "$ref": "$[\"service\"][\"provider\"][\"compiledCloudFormationTemplate\"][\"Resources\"][\"CommonLibsLambdaLayer\"][\"Properties\"][\"CompatibleRuntimes\"]"
+          },
+          "package": {
+            "artifact": "/Users/apple/Desktop/Biz-Cloud/omni-dw-salesforce-apis/.serverless/commonLibs.zip"
+          }
+        }
       }
     },
-    "isDashboardMonitoringPreconfigured": false
+    "layers": {
+      "$ref": "$[\"service\"][\"initialServerlessConfig\"][\"layers\"]"
+    },
+    "isDashboardMonitoringPreconfigured": false,
+    "stepFunctions": {
+      "stateMachines": {
+        "$ref": "$[\"service\"][\"initialServerlessConfig\"][\"stepFunctions\"][\"stateMachines\"]"
+      },
+      "activities": []
+    }
   },
   "package": {
     "individually": true,
-    "artifactDirectoryName": "serverless/omni-dw/dev/1643359315732-2022-01-28T08:41:55.732Z",
+    "artifactDirectoryName": "serverless/omni-dw/dev/1643398113975-2022-01-28T19:28:33.975Z",
     "artifact": ""
   }
 }

@@ -1,0 +1,10 @@
+stateMachine:
+  name: omni-dw-salesForce-apis-state-machine
+  definition:
+    Comment: "State machine for salesforce Apis integration"
+    StartAt: PublishEvents
+    States:
+      PublishEvents:
+        Type: Task
+        Resource: "arn:aws:lambda:us-east-1:332281781429:function:omni-dw-dev-SalesForceApi"
+        End: true

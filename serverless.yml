@@ -29,10 +29,15 @@ functions:
     - ${file(config/salesForceApi.yml)}
     - ${file(config/createDynamoTables.yml)}
 
+stepFunctions:
+  stateMachines:
+    test-salesforce-state-machine: ${file(config/StepFunctions/SalesforceApisStateMachine.yml):stateMachine}
+
 plugins:
   - serverless-offline
   - serverless-prune-plugin
-
+  - serverless-step-functions
+  
 layers:
   commonLibs:
     path: lib
