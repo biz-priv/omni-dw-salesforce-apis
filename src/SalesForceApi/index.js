@@ -97,7 +97,7 @@ module.exports.handler = async (event) => {
             password: process.env.DB_PASSWORD,
         });
         await client.connect();
-        let sqlQuery = `select * from datamart.sf_sales_summary where year = '2022' and (load_create_date >= '${queryTime}' or load_update_date >= '${queryTime}') limit 15`;
+        let sqlQuery = `select * from datamart.sf_sales_summary where year = '2022' and (load_create_date >= '${queryTime}' or load_update_date >= '${queryTime}') limit 18`;
         let dbResponse = await client.query(sqlQuery);
         let result = dbResponse.rows;
         await client.end();
@@ -108,8 +108,9 @@ module.exports.handler = async (event) => {
         DbDataCount = result.length;
         let currentLoadCreateDate = "";
         let currentLoadUpdateDate = "";
-        let lastInsertDate = "";
+        let lastInsertDate = ssmTimestamp;
         //2022-01-24T11:06:50.428Z
+        //2022-01-27T12:15:13.621Z
         for (let key in result) {
             owner = result[key]['owner'] ? result[key]['owner'] : "crm admin";
             billingStreet = result[key]['addr1'] ? result[key]['addr1'] : "Not Available";
@@ -389,7 +390,7 @@ module.exports.handler = async (event) => {
                 forecastDetailsReqNamesArr = [];
                 break;
             }
-            if (loopCount == 2) {
+            if (loopCount == 15) {
                 break;
             }
             loopCount += 1;
@@ -424,6 +425,7 @@ module.exports.handler = async (event) => {
       }
       return { hasMoreData };
 }
+
 
 async function getOwnerID(OWNER_USER_ID_BASE_URL, options, owner) {
     try {
@@ -462,7 +464,6 @@ async function getCrmAdminOwnerID(OWNER_USER_ID_BASE_URL, options) {
         return false;
     }
 }
-
 async function createChildAccount(OWNER_USER_ID_BASE_URL,CHILD_ACCOUNT_URL, childAccountBody, options) {
     let resChildAccountId = "";
     try {
