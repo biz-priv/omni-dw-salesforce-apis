@@ -14,8 +14,6 @@ function generateExcelSheet(array, worksheet, styleForData) {
     }
 }
 
-
-
 async function itemInsertintoExcel(parentDataArr, childDataArr, forecastDetailsArr) {
 
     try {
@@ -61,7 +59,7 @@ async function itemInsertintoExcel(parentDataArr, childDataArr, forecastDetailsA
         worksheet2.cell(1, 2).string('Request Params').style(style);
         worksheet2.cell(1, 3).string('Response').style(style);
 
-        generateExcelSheet(parentDataArr, worksheet, styleForData);
+        // generateExcelSheet(parentDataArr, worksheet, styleForData);
         generateExcelSheet(childDataArr, worksheet1, styleForData)
         generateExcelSheet(forecastDetailsArr, worksheet2, styleForData)
         workbook.write('/tmp/salesforceFailedRecords.xlsx');
