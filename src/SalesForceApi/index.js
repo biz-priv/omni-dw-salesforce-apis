@@ -208,7 +208,7 @@ module.exports.handler = async (event) => {
 
             // console.info("Child Account Params : \n" + JSON.stringify(childAccountBody));
             const [createChildAccountRes,createChildExecutionStatus] = await createChildAccount(OWNER_USER_ID_BASE_URL,CHILD_ACCOUNT_URL, childAccountBody, options);
-            console.info("createChildAccountRes :\n", createChildAccountRes);
+            // console.info("createChildAccountRes :\n", createChildAccountRes);
             let childDynamoData = {
                 PutRequest: {
                     Item: {
@@ -251,7 +251,7 @@ module.exports.handler = async (event) => {
                     }
                 }
             };
-            console.info(createChildExecutionStatus);
+            // console.info(createChildExecutionStatus);
             if (createChildExecutionStatus != false) {
                 childDynamoData = {
                     PutRequest: {
@@ -280,7 +280,7 @@ module.exports.handler = async (event) => {
                 const [selectedSaleForcastId,fetchSalesForecastIdStatus] = await fetchSalesForecastRecordId(options, selecselectedSaleForcastIdEndpoint, SALES_FORECAST_RECORD_ID_URL);
                 if (fetchSalesForecastIdStatus != false) {
                     const [upsertSalesForecastDetail,upsertForecastStatus, upsertForecastPayload] = await upsertSalesForecastDetails(options, customerUniqueId, childName, year, month, totalCharge, totalCost, selectedSaleForcastId, UPSERT_SALES_FORECAST_DETAILS_BASE_URL, forecastDataExcellObj);
-                    console.info(upsertForecastStatus);
+                    // console.info(upsertForecastStatus);
                     if (upsertForecastStatus != false) {
                         saleForecastData = {
                             PutRequest: {
@@ -389,7 +389,7 @@ module.exports.handler = async (event) => {
                 forecastDetailsReqNamesArr = [];
                 break;
             }
-            if (loopCount == 10) {
+            if (loopCount == 2) {
                 break;
             }
             loopCount += 1;
@@ -399,8 +399,18 @@ module.exports.handler = async (event) => {
             Dynamo.itemInsert(CHILD_ACCOUNT_TABLE, childDataArr),
             Dynamo.itemInsert(SALE_FORECAST_TABLE, forecastDetailsArr)
         ]);
-        await EXCEL.itemInsertintoExcel(parentDataExcellArr, childDataExcellArr,forecastDataExcellArr);
-        await SENDEMAIL.sendEmail();
+        if(parentDataExcellArr.length > 0 || childDataExcellArr.length > 0 || forecastDataExcellArr.length > 0){
+            const parentAccountFailureCount = parentDataExcellArr.length;
+            const childAccountFailureCount = childDataExcellArr.length;
+            const forecastDetailsFailureCount = forecastDataExcellArr.length;
+            console.info("Preparing Spreadsheet for Mail.");
+            console.info("Parent Account Error Records Count : " + parentAccountFailureCount);
+            console.info("Child Account Error Records Count : " + childAccountFailureCount);
+            console.info("Sale Forecast Detail Error Records Count : " + forecastDetailsFailureCount);
+
+            await EXCEL.itemInsertintoExcel(parentDataExcellArr, childDataExcellArr,forecastDataExcellArr);
+            await SENDEMAIL.sendEmail(parentAccountFailureCount,childAccountFailureCount,forecastDetailsFailureCount);
+        }
         createdAt = new Date().toISOString();
         let updateTimestamp = await SSM.updateLatestTimestampToSSM(lastInsertDate);
     } catch (error) {
@@ -459,7 +469,7 @@ async function createChildAccount(OWNER_USER_ID_BASE_URL,CHILD_ACCOUNT_URL, chil
         // console.info(CHILD_ACCOUNT_URL);
         // console.info(JSON.stringify(childAccountBody));
         const createChildAccountReq = await axios.patch(CHILD_ACCOUNT_URL, childAccountBody, options);
-        console.info("Child Account Response: \n", createChildAccountReq.data);
+        // console.info("Child Account Response: \n", createChildAccountReq.data);
         resChildAccountId = createChildAccountReq.data.id;
         return [resChildAccountId,true];
     } catch (error) {
@@ -546,7 +556,7 @@ async function fetchSalesForecastRecordId(options, selecselectedSaleForcastIdEnd
         // console.info("Sales Forecast Id Url : \n", JSON.stringify(forecastRecordsDataURl));
         let forecastRecordsData = await axios.get(forecastRecordsDataURl, options);
         // console.info("Sales Forecast Id Response : \n", forecastRecordsData);
-        let forecastId = forecastRecordsData['data']['Id'][200];
+        let forecastId = forecastRecordsData['data']['Id'];
         if(typeof forecastId != 'undefined'){
             // console.info("Forecast ID : \n", forecastId);
             return [forecastId,true];
@@ -575,9 +585,9 @@ async function upsertSalesForecastDetails(options, customerUniqueId, childAccoun
         let upsertSalesForecastDetailUrl = UPSERT_SALES_FORECAST_DETAILS_BASE_URL + customerUniqueId;
         
         let upsertSalesForecastDetail = await axios.patch(upsertSalesForecastDetailUrl, upsertSalesForecastDetailBody, options);
-        console.info("Upsert Sales Forcast URL : \n" + upsertSalesForecastDetailUrl);
-        console.info("Upsert Sales Forcast Body : \n" + JSON.stringify(upsertSalesForecastDetailBody));
-        console.info("Upsert Sales Forcast Response : \n" + JSON.stringify(upsertSalesForecastDetail.data));
+        // console.info("Upsert Sales Forcast URL : \n" + upsertSalesForecastDetailUrl);
+        // console.info("Upsert Sales Forcast Body : \n" + JSON.stringify(upsertSalesForecastDetailBody));
+        // console.info("Upsert Sales Forcast Response : \n" + JSON.stringify(upsertSalesForecastDetail.data));
         return [upsertSalesForecastDetail.data,true,upsertSalesForecastDetailBody];
     }
     catch (error) {

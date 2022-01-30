@@ -4,7 +4,7 @@ const sftpClient = require('ssh2').Client;
 // const { resolve } = require('path');
 
 
-async function sendEmail() {
+async function sendEmail(parentAccountFailureCount,childAccountFailureCount,forecastDetailsFailureCount) {
     return new Promise((resolve, reject) => {
         try {
             const TRANSPORTER = nodemailer.createTransport({
@@ -20,8 +20,8 @@ async function sendEmail() {
                     from: process.env.SMTP_SENDER,
                     to: process.env.SMTP_RECEIVER,
                     subject: "SalesForce Failed Records",
-                    text: "Please check the attachment for failed Records",
-                    html: "<b>Please check the attachment for failed Records</b>",
+                    text: "Hello,<br>Total Parent Account Error Records Count : " + parentAccountFailureCount + "<br>" + "Total Child Account Error Records Count : " + childAccountFailureCount + "<br>" + "Total Child Account Error Records Count : " + forecastDetailsFailureCount + "<br>" + "PFA report for failed records for Salesforce APIs.<Br>Thanks.",
+                    html: "Hello,<br>Total Parent Account Error Records Count : <b>" + parentAccountFailureCount + "</b><br>" + "Total Child Account Error Records Count : <b>" + childAccountFailureCount + "</b><br>" + "Total Sale Forecast Detail Error Records Count : <b>" + forecastDetailsFailureCount + "</b><br>" + "<b>PFA report for failed records for Salesforce APIs.</b><Br>Thanks.",
                     attachments: [
                         {
                             filename: 'salesForceFailedRecords.xlsx',

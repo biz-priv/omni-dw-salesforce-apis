@@ -20,10 +20,6 @@ async function itemInsertintoExcel(parentDataArr, childDataArr, forecastDetailsA
         console.info('creating sheets')
         
         let workbook = new excel.Workbook();
-        // Add Worksheets to the workbook
-        let worksheet = workbook.addWorksheet('Parent Data');
-        let worksheet1 = workbook.addWorksheet('Child Data');
-        let worksheet2 = workbook.addWorksheet('Forecast Data');
         let style = workbook.createStyle({
             font: {
                 color: '#47180E',
@@ -43,25 +39,37 @@ async function itemInsertintoExcel(parentDataArr, childDataArr, forecastDetailsA
             },
             numberFormat: '$#,##0.00; ($#,##0.00); -'
         });
+        // Add Worksheets to the workbook
+        // let worksheet = workbook.addWorksheet('Parent Data');
+        if(childDataArr.length > 0){
+            let worksheet1 = workbook.addWorksheet('Child Data');
+            //Tab 2 headers
+            worksheet1.cell(1, 1).string('Status').style(style);
+            worksheet1.cell(1, 2).string('Request Params').style(style);
+            worksheet1.cell(1, 3).string('Response').style(style);
+            generateExcelSheet(childDataArr, worksheet1, styleForData)
+        }
+        if(forecastDetailsArr.length > 0){
+            let worksheet2 = workbook.addWorksheet('Forecast Data');
+                    //Tab 3 headers 
+            worksheet2.cell(1, 1).string('Status').style(style);
+            worksheet2.cell(1, 2).string('Request Params').style(style);
+            worksheet2.cell(1, 3).string('Response').style(style);
+
+            generateExcelSheet(forecastDetailsArr, worksheet2, styleForData)
+        }
         //Tab 1 headers
-        worksheet.cell(1, 1).string('Status').style(style);
-        worksheet.cell(1, 2).string('Request Params').style(style);
-        worksheet.cell(1, 3).string('Response').style(style);
+        // worksheet.cell(1, 1).string('Status').style(style);
+        // worksheet.cell(1, 2).string('Request Params').style(style);
+        // worksheet.cell(1, 3).string('Response').style(style);
 
 
-        //Tab 2 headers
-        worksheet1.cell(1, 1).string('Status').style(style);
-        worksheet1.cell(1, 2).string('Request Params').style(style);
-        worksheet1.cell(1, 3).string('Response').style(style);
+        
 
-        //Tab 3 headers 
-        worksheet2.cell(1, 1).string('Status').style(style);
-        worksheet2.cell(1, 2).string('Request Params').style(style);
-        worksheet2.cell(1, 3).string('Response').style(style);
 
         // generateExcelSheet(parentDataArr, worksheet, styleForData);
-        generateExcelSheet(childDataArr, worksheet1, styleForData)
-        generateExcelSheet(forecastDetailsArr, worksheet2, styleForData)
+        
+        
         workbook.write('/tmp/salesforceFailedRecords.xlsx');
 
     } catch (e) {

@@ -1,5 +1,6 @@
 SalesForceApi:
   handler: src/SalesForceApi/index.handler
+  timeout: 240
   layers:
     - { Ref: CommonLibsLambdaLayer }  
   environment:
