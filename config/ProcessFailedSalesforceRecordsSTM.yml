@@ -1,13 +1,13 @@
 stateMachine:
-  name: omni-dw-salesForce-apis-state-machine
+  name: omni-dw-salesForce-apis-process-records-STM
   definition:
-    Comment: "State machine for salesforce Apis integration"
+    Comment: "State machine for process dynamo DB records"
     StartAt: PublishEvents
     States:
       PublishEvents:
         Type: Task
         Resource: 
-          Fn::GetAtt: ["SalesForceApi","Arn"]
+          Fn::GetAtt: ["ProcessFailedRecords","Arn"]
         Next: EndChoice
       EndChoice:
         Type: Choice
@@ -20,5 +20,3 @@ stateMachine:
             Next: PublishEvents
       SuccessState:
         Type: Succeed
-  # events:
-  #   - schedule: rate(9 hour)

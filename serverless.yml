@@ -28,10 +28,12 @@ package:
 functions:
     - ${file(config/salesForceApi.yml)}
     - ${file(config/createDynamoTables.yml)}
+    - ${file(config/ProcessFailedRecords.yml)}
 
 stepFunctions:
   stateMachines:
-    test-salesforce-state-machine: ${file(config/SalesforceApisStateMachine.yml):stateMachine}
+    rds-salesforce-state-machine: ${file(config/SalesforceApisStateMachine.yml):stateMachine}
+    # dynamo-salesforce-state-machine: ${file(config/ProcessFailedSalesforceRecordsSTM.yml):stateMachine}
 
 plugins:
   - serverless-offline

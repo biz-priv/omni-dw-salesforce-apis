@@ -4,7 +4,11 @@ const { Client } = require("pg");
 const Dynamo = require("../shared/dynamoDb/index");
 const SSM = require("../shared/ssm/index");
 const EXCEL = require("../shared/excelSheets/index");
-const SENDEMAIL = require('../shared/sendEmail/index');
+const {sendEmail,sendProcessedRecordsEmail} = require('../shared/sendEmail/index');
+const { generateAccessToken } = require('./generateAccessToken');
+const { getOwnerID, getCrmAdminOwnerID } = require('./getOwnerId');
+const { createChildAccount } = require('./handleCreateChildAccount');
+const { fetchSalesForecastRecordId, upsertSalesForecastDetails } = require('./handleSaleForcastDetail');
 
 const PARENT_ACCOUNT_RECORD_TYPE_ID = process.env.PARENT_RECORDS_TYPE_ID;
 const CHILD_ACCOUNT_RECORD_TYPE_ID = process.env.CHILD_RECORD_TYPE_ID;
@@ -13,13 +17,7 @@ const CHILD_ACCOUNT_TABLE = process.env.CHILD_ACCOUNT_DYNAMO_TABLE;
 const SALE_FORECAST_TABLE = process.env.SALE_FORECAST_DYNAMO_TABLE;
 const TOKEN_BASE_URL = process.env.TOKEN_BASE_URL;
 
-async function generateAccessToken() {
-    // generate access token 
-    let tokenUrl = TOKEN_BASE_URL;
-    // console.info("Access Token Url : \n", JSON.stringify(tokenUrl));
-    let response = await axios.post(tokenUrl);
-    return response.data;
-}
+
 
 module.exports.handler = async (event) => {
     // console.info("Event: \n", JSON.stringify(event));
@@ -64,7 +62,7 @@ module.exports.handler = async (event) => {
     let hasMoreData = "false";
     try {
 
-        let token = await generateAccessToken();
+        let token = await generateAccessToken(TOKEN_BASE_URL);
         accessToken = token['access_token'];
         instanceUrl = token['instance_url'];
         // console.info("Access Token Response : \n", token);
@@ -128,18 +126,18 @@ module.exports.handler = async (event) => {
             month = result[key]['month'] ? result[key]['month'] : "Not Available";
             totalCharge = result[key]['total charge'] ? result[key]['total charge'] : "Not Available";
             totalCost = result[key]['total cost'] ? result[key]['total cost'] : "Not Available";
-            currentLoadCreateDate = result[key]['load_create_date'] ;
-            currentLoadUpdateDate = result[key]['load_update_date'] ;
-            if(currentLoadCreateDate != null && currentLoadUpdateDate == null){
+            currentLoadCreateDate = result[key]['load_create_date'];
+            currentLoadUpdateDate = result[key]['load_update_date'];
+            if (currentLoadCreateDate != null && currentLoadUpdateDate == null) {
                 lastInsertDate = new Date(currentLoadCreateDate).toISOString();
             }
-            else if(currentLoadCreateDate == null && currentLoadUpdateDate != null){
+            else if (currentLoadCreateDate == null && currentLoadUpdateDate != null) {
                 lastInsertDate = new Date(currentLoadUpdateDate).toISOString();
             }
-            else if(currentLoadCreateDate != null && currentLoadUpdateDate != null){
+            else if (currentLoadCreateDate != null && currentLoadUpdateDate != null) {
                 lastInsertDate = new Date(currentLoadUpdateDate).toISOString();
             }
-            
+
             // return;
             // creating parent account
             const PARENT_ACCOUNT_PARAMS = {
@@ -208,7 +206,7 @@ module.exports.handler = async (event) => {
 
 
             // console.info("Child Account Params : \n" + JSON.stringify(childAccountBody));
-            const [createChildAccountRes,createChildExecutionStatus] = await createChildAccount(OWNER_USER_ID_BASE_URL,CHILD_ACCOUNT_URL, childAccountBody, options);
+            const [createChildAccountRes, createChildExecutionStatus] = await createChildAccount(OWNER_USER_ID_BASE_URL, CHILD_ACCOUNT_URL, childAccountBody, options);
             // console.info("createChildAccountRes :\n", createChildAccountRes);
             let childDynamoData = {
                 PutRequest: {
@@ -238,7 +236,11 @@ module.exports.handler = async (event) => {
                 PutRequest: {
                     Item: {
                         unique_Record_ID: customerUniqueId,
+                        sourceSystem: sourceSystem,
+                        billToNumber: billToNumber,
+                        controllingCustomerNumber: controllingCustomerNumber,
                         req_Name: `${childName} ${year} ${month}`,
+                        req_ChildName: childName,
                         req_Year__c: year,
                         req_Month__c: month,
                         req_Date__c: `${year}-${month}-01`,
@@ -278,15 +280,20 @@ module.exports.handler = async (event) => {
                     }
                 }
                 let selecselectedSaleForcastIdEndpoint = `${sourceSystem}${billToNumber}${controllingCustomerNumber}${year}`;
-                const [selectedSaleForcastId,fetchSalesForecastIdStatus] = await fetchSalesForecastRecordId(options, selecselectedSaleForcastIdEndpoint, SALES_FORECAST_RECORD_ID_URL);
+                const [selectedSaleForcastId, fetchSalesForecastIdStatus] = await fetchSalesForecastRecordId(options, selecselectedSaleForcastIdEndpoint, SALES_FORECAST_RECORD_ID_URL);
                 if (fetchSalesForecastIdStatus != false) {
-                    const [upsertSalesForecastDetail,upsertForecastStatus, upsertForecastPayload] = await upsertSalesForecastDetails(options, customerUniqueId, childName, year, month, totalCharge, totalCost, selectedSaleForcastId, UPSERT_SALES_FORECAST_DETAILS_BASE_URL, forecastDataExcellObj);
+                    const [upsertSalesForecastDetail, upsertForecastStatus, upsertForecastPayload] = await upsertSalesForecastDetails(options, customerUniqueId, childName, year, month, totalCharge, totalCost, selectedSaleForcastId, UPSERT_SALES_FORECAST_DETAILS_BASE_URL);
                     // console.info(upsertForecastStatus);
                     if (upsertForecastStatus != false) {
                         saleForecastData = {
                             PutRequest: {
                                 Item: {
+                                    unique_Record_ID: customerUniqueId,
+                                    sourceSystem: sourceSystem,
+                                    billToNumber: billToNumber,
+                                    controllingCustomerNumber: controllingCustomerNumber,
                                     req_Name: `${childName} ${year} ${month}`,
+                                    req_ChildName: childName,
                                     req_Year__c: year,
                                     req_Month__c: month,
                                     req_Date__c: `${year}-${month}-01`,
@@ -309,7 +316,11 @@ module.exports.handler = async (event) => {
                             PutRequest: {
                                 Item: {
                                     unique_Record_ID: customerUniqueId,
+                                    sourceSystem: sourceSystem,
+                                    billToNumber: billToNumber,
+                                    controllingCustomerNumber: controllingCustomerNumber,
                                     req_Name: `${childName} ${year} ${month}`,
+                                    req_ChildName: childName,
                                     req_Year__c: year,
                                     req_Month__c: month,
                                     req_Date__c: `${year}-${month}-01`,
@@ -335,6 +346,9 @@ module.exports.handler = async (event) => {
                     forecastDataExcellObj['Status'] = "Failed";
                     forecastDataExcellObj['Request Params'] = JSON.stringify({
                         unique_Record_ID: customerUniqueId,
+                        sourceSystem: sourceSystem,
+                        billToNumber: billToNumber,
+                        controllingCustomerNumber: controllingCustomerNumber,
                         req_Name: `${childName} ${year} ${month}`,
                         req_Year__c: year,
                         req_Month__c: month,
@@ -390,7 +404,7 @@ module.exports.handler = async (event) => {
                 forecastDetailsReqNamesArr = [];
                 break;
             }
-            if (loopCount == 15) {
+            if (loopCount == 100) {
                 break;
             }
             loopCount += 1;
@@ -400,7 +414,7 @@ module.exports.handler = async (event) => {
             Dynamo.itemInsert(CHILD_ACCOUNT_TABLE, childDataArr),
             Dynamo.itemInsert(SALE_FORECAST_TABLE, forecastDetailsArr)
         ]);
-        if(parentDataExcellArr.length > 0 || childDataExcellArr.length > 0 || forecastDataExcellArr.length > 0){
+        if (parentDataExcellArr.length > 0 || childDataExcellArr.length > 0 || forecastDataExcellArr.length > 0) {
             const parentAccountFailureCount = parentDataExcellArr.length;
             const childAccountFailureCount = childDataExcellArr.length;
             const forecastDetailsFailureCount = forecastDataExcellArr.length;
@@ -409,8 +423,10 @@ module.exports.handler = async (event) => {
             console.info("Child Account Error Records Count : " + childAccountFailureCount);
             console.info("Sale Forecast Detail Error Records Count : " + forecastDetailsFailureCount);
 
-            await EXCEL.itemInsertintoExcel(parentDataExcellArr, childDataExcellArr,forecastDataExcellArr);
-            await SENDEMAIL.sendEmail(parentAccountFailureCount,childAccountFailureCount,forecastDetailsFailureCount);
+            await EXCEL.itemInsertintoExcel(parentDataExcellArr, childDataExcellArr, forecastDataExcellArr);
+            let mailSubject = "SalesForce Failed Records";
+            let mailBody = "Hello,<br>Total Parent Account Error Records Count : <b>" + parentAccountFailureCount + "</b><br>" + "Total Child Account Error Records Count : <b>" + childAccountFailureCount + "</b><br>" + "Total Sale Forecast Detail Error Records Count : <b>" + forecastDetailsFailureCount + "</b><br>" + "<b>PFA report for failed records for Salesforce APIs.</b><Br>Thanks."
+            await sendEmail(mailSubject,mailBody);
         }
         createdAt = new Date().toISOString();
         let updateTimestamp = await SSM.updateLatestTimestampToSSM(lastInsertDate);
@@ -418,181 +434,15 @@ module.exports.handler = async (event) => {
         console.error("Error Error : \n" + error);
     }
 
-    if(loopCount == DbDataCount){
+    if (loopCount == DbDataCount) {
         hasMoreData = "false";
-      } else {
+    } else {
         hasMoreData = "true";
-      }
-      return { hasMoreData };
-}
-
-
-async function getOwnerID(OWNER_USER_ID_BASE_URL, options, owner) {
-    try {
-        let ownerIdUrl = OWNER_USER_ID_BASE_URL + owner;
-
-        // console.info("Owner User ID Endpoint : \n", JSON.stringify(ownerIdUrl));
-        const OWNER_USER_ID = await axios.get(ownerIdUrl, options);
-        // console.info('executed db owner id query');
-        // console.info("Owner User ID Response : \n", OWNER_USER_ID['data']);
-        let ownerIdRes = OWNER_USER_ID['data']['Id'];
-        if(typeof ownerIdRes != 'undefined'){
-            return ownerIdRes;
-        }
-        return false;
-    } catch (error) {
-        // console.info("catch owner id error : \n", error)
-        return getCrmAdminOwnerID(OWNER_USER_ID_BASE_URL, options, );
     }
-}
-
-async function getCrmAdminOwnerID(OWNER_USER_ID_BASE_URL, options) {
-    try {
-        let ownerIdUrl = OWNER_USER_ID_BASE_URL + 'crm admin';
-        // console.info("Owner User crm admin Endpoint : \n", JSON.stringify('crm admin'));
-        const OWNER_USER_ID = await axios.get(ownerIdUrl, options);
-        // console.info('executed crm admin owner id query')
-        // console.info("Owner User ID Response : \n", OWNER_USER_ID['data']);
-        let ownerIdRes = OWNER_USER_ID['data']['Id'];
-        // console.info("Catch ownerIdRes : \n", JSON.stringify(ownerIdRes));
-        if(typeof ownerIdRes != 'undefined'){
-        return ownerIdRes;
-        }
-        return false;
-    } catch (ownerIderror) {
-        console.error("ownerIderror : \n", ownerIderror);
-        return false;
-    }
-}
-async function createChildAccount(OWNER_USER_ID_BASE_URL,CHILD_ACCOUNT_URL, childAccountBody, options) {
-    let resChildAccountId = "";
-    try {
-        // console.info(CHILD_ACCOUNT_URL);
-        // console.info(JSON.stringify(childAccountBody));
-        const createChildAccountReq = await axios.patch(CHILD_ACCOUNT_URL, childAccountBody, options);
-        // console.info("Child Account Response: \n", createChildAccountReq.data);
-        resChildAccountId = createChildAccountReq.data.id;
-        return [resChildAccountId,true];
-    } catch (error) {
-        console.error("****Error : \n" + error);
-        if (error.response.data.length >= 1) {
-            let errorResponse = error.response.data[0];
-            let childAccountId = checkDuplicateEntry(errorResponse);
-            if (childAccountId != null) {
-                // childDynamoData['res_child_account_id'] = childAccountId;
-
-                try {
-                    let fetchChildAccountsList = await axios.get(FETCH_CHILD_ACCOUNT_BASE_URL, options);
-                    let childAccountsApiRecentItems = fetchChildAccountsList.data.recentItems;
-                    let checkExistingAccount = findExistingChildAccount(childAccountId, childAccountsApiRecentItems);
-
-                    if (checkExistingAccount.length > 0) {
-
-                        resChildAccountId = childAccountId;
-                        return [resChildAccountId,true];
-                    }
-                } catch (newError) {
-                    // console.error("Error : \n" + newError);
-                    return [JSON.stringify(newError),false];
-                    // return send_response(401, newError);
-                }
-            }
-            else if(checkInactiveUserEntry(errorResponse)){
-                    console.error("Inactive Owner Account. Fetching ID from CRM Admin");
-                    let crmAdminOwnerID = await getCrmAdminOwnerID(OWNER_USER_ID_BASE_URL, options)
-                    if(crmAdminOwnerID != false){
-                        childAccountBody['OwnerId'] = crmAdminOwnerID;
-                        return await createChildAccount(OWNER_USER_ID_BASE_URL,CHILD_ACCOUNT_URL, childAccountBody, options);
-                    }
-                console.error("**********Failed Error : \n", error.response.data[0]);
-                return [JSON.stringify(error.response.data[0]),false];
-            }
-        }
-        else {
-            // console.error("Error : \n", error.response.data[0]);
-            return [JSON.stringify(error.response.data[0]),false];
-            
-        }
-        console.error("Line 492 ==> Error : \n", error.response.data[0]);
-        return [JSON.stringify(error.response.data[0]),false];
-        // return send_response(400, error);
-    }
-}
-
-function checkDuplicateEntry(findValue) {
-    if (typeof findValue.errorCode != "undefined" && findValue.errorCode.toUpperCase().trim() == "DUPLICATES_DETECTED") {
-        return findValue.duplicateResut.matchResults[0].matchRecords[0].record.Id;
-    }
-    return null;
-}
-
-function checkInactiveUserEntry(findValue) {
-    if (typeof findValue.errorCode != "undefined" && findValue.errorCode.toUpperCase().trim() == "INACTIVE_OWNER_OR_USER") {
-        return true;
-    }
-    return false;
+    return { hasMoreData };
 }
 
 
-function findExistingChildAccount(childAccountID, accountRecords) {
-    return accountRecords.filter(
-        function (record) { return record.Id == childAccountID }
-    );
-}
 
-function validateForecastRecordsData(forecastRecordsData) {
-    return ('data' in forecastRecordsData ? (forecastRecordsData.data.id ? true : false) : false);
-}
 
-async function fetchSalesForecastId(options) {
-    // console.info("Sales Forecast Id Url : \n", JSON.stringify(SALES_FORECAST_RECORD_ID_URL));
-    let forecastRecordsData = await axios.get(SALES_FORECAST_RECORD_ID_URL, options);
-    // console.info("Sales Forecast Id Response : \n", JSON.stringify(forecastRecordsData['data']['recentItems'][0]['Id']));
-    return (validateForecastRecordsData(forecastRecordsData) ? forecastRecordsData['data']['recentItems'][1]['Id'] : null);
-}
 
-async function fetchSalesForecastRecordId(options, selecselectedSaleForcastIdEndpoint, SALES_FORECAST_RECORD_ID_URL) {
-    try {
-        let forecastRecordsDataURl = SALES_FORECAST_RECORD_ID_URL + selecselectedSaleForcastIdEndpoint;
-        // console.info("Sales Forecast Id Url : \n", JSON.stringify(forecastRecordsDataURl));
-        let forecastRecordsData = await axios.get(forecastRecordsDataURl, options);
-        // console.info("Sales Forecast Id Response : \n", forecastRecordsData);
-        let forecastId = forecastRecordsData['data']['Id'];
-        if(typeof forecastId != 'undefined'){
-            // console.info("Forecast ID : \n", forecastId);
-            return [forecastId,true];
-        }
-        return ["Unable to fetch forecast ID",false];
-        // return (validateForecastRecordsData(forecastRecordsData) ? forecastRecordsData['data']['Id'] : null);
-    } catch (error) {
-        console.error("Error from sale forecast record fetch id api: ", error);
-        return [JSON.stringify(error), false];
-    }
-}
-
-async function upsertSalesForecastDetails(options, customerUniqueId, childAccountName, year, month, totalCharge, totalCost, selectedSaleForcastId, UPSERT_SALES_FORECAST_DETAILS_BASE_URL) {
-    
-    let upsertSalesForecastDetailBody = {
-        "Name": `${childAccountName} ${year} ${month}`,
-        "Year__c": year,
-        "Month__c": month,
-        "Date__c": `${year}-${month}-01`,
-        "Total_Charge__c": totalCharge,
-        "Total_Cost__c": totalCost,
-        "Sales_Forecast__c": selectedSaleForcastId
-    };
-
-    try {
-        let upsertSalesForecastDetailUrl = UPSERT_SALES_FORECAST_DETAILS_BASE_URL + customerUniqueId;
-        
-        let upsertSalesForecastDetail = await axios.patch(upsertSalesForecastDetailUrl, upsertSalesForecastDetailBody, options);
-        // console.info("Upsert Sales Forcast URL : \n" + upsertSalesForecastDetailUrl);
-        // console.info("Upsert Sales Forcast Body : \n" + JSON.stringify(upsertSalesForecastDetailBody));
-        // console.info("Upsert Sales Forcast Response : \n" + JSON.stringify(upsertSalesForecastDetail.data));
-        return [upsertSalesForecastDetail.data,true,upsertSalesForecastDetailBody];
-    }
-    catch (error) {
-        console.error("Error from sale forecast api: " + JSON.stringify(error.response.data));
-        return [JSON.stringify(error.response.data),false,upsertSalesForecastDetailBody];
-    }
-}
