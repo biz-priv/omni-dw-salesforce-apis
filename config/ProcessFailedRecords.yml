@@ -1,6 +1,6 @@
 ProcessFailedRecords:
   handler: src/SalesForceApi/processFailedRecords.handler
-  timeout: 240
+  timeout: 900
   layers:
     - { Ref: CommonLibsLambdaLayer }  
   environment:
@@ -42,9 +42,9 @@ ProcessFailedRecords:
     subnetIds:
       - ${ssm:/omni-dw/${self:provider.stage}/lambda/subnetA}
       
-  events:
-    # - schedule: rate(9 hours)
-    - http:
-        path: process-failed-records
-        method: get
-        cors: true
+  # events:
+  #   # - schedule: rate(9 hours)
+  #   - http:
+  #       path: process-failed-records
+  #       method: get
+  #       cors: true

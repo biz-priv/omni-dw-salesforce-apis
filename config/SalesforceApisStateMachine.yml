@@ -14,11 +14,17 @@ stateMachine:
         Choices:
           - Variable: $.hasMoreData
             StringEquals: "false"
-            Next: SuccessState
+            Next: ProcessFailedRecordsEvent
           - Variable: $.hasMoreData
             StringEquals: "true"
             Next: PublishEvents
+      ProcessFailedRecordsEvent:
+        Type: Task
+        Resource: 
+          Fn::GetAtt: ["ProcessFailedRecords","Arn"]
+        Next: SuccessState
       SuccessState:
         Type: Succeed
-  # events:
-  #   - schedule: rate(9 hour)
+  events:
+    - schedule: cron(0 14,2 * * ? *)
+    # - schedule: rate(9 hour)

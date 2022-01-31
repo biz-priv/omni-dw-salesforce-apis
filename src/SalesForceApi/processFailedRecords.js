@@ -2,7 +2,7 @@ const { generateAccessToken } = require('./generateAccessToken');
 const { createChildAccount } = require('./handleCreateChildAccount');
 const { fetchSalesForecastRecordId, upsertSalesForecastDetails } = require('./handleSaleForcastDetail');
 const { sendEmail, sendProcessedRecordsEmail } = require('../shared/sendEmail/index');
-const Dynamo = require('../shared/dynamoDB/index');
+const Dynamo = require('../shared/dynamoDb/index');
 const { Client } = require("pg");
 const axios = require('axios');
 
@@ -162,9 +162,9 @@ async function handleChildFailedRecords(OWNER_USER_ID_BASE_URL, CHILD_ACCOUNT_BA
                 childParentIdsArr.push(parentDataId);
                 // }
             }
-            if(childLoopCount >= 12){
-                break;
-            }
+            // if(childLoopCount >= 12){
+            //     break;
+            // }
             childLoopCount += 1;
         }
     }
@@ -224,9 +224,9 @@ async function handleForecastFailedRecords(SALES_FORECAST_RECORD_ID_URL, UPSERT_
                     // }
                 }
             }
-            if(forecastLoopCount >= 12){
-                break;
-            }
+            // if(forecastLoopCount >= 12){
+            //     break;
+            // }
             forecastLoopCount += 1;
 
         }

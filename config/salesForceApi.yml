@@ -1,6 +1,6 @@
 SalesForceApi:
   handler: src/SalesForceApi/index.handler
-  timeout: 240
+  timeout: 370
   layers:
     - { Ref: CommonLibsLambdaLayer }  
   environment:
@@ -29,7 +29,7 @@ SalesForceApi:
     SMTP_PASSWORD: ${ssm:/omni-dw/${self:provider.stage}/smtp/password~true}
     SMTP_SENDER: ${ssm:/omni-dw/${self:provider.stage}/smtp/sender~true}
     SMTP_RECEIVER: ${ssm:/omni-dw/${self:provider.stage}/smtp/receiver~true}
-
+    S3_BUCKET_NAME: ${ssm:/omni-dw/salesforce/${self:provider.stage}/s3/bucket-name~true}
 
   package:
     individually: true
@@ -43,8 +43,8 @@ SalesForceApi:
       - ${ssm:/omni-dw/${self:provider.stage}/lambda/subnetA}
       
   # events:
-    # - schedule: cron(0 16 * * ? *)
-    # - http:
-    #     path: salesForceApi
-    #     method: post
-    #     cors: true
+  #   # - schedule: cron(0 16 * * ? *)
+  #   - http:
+  #       path: salesForceApi
+  #       method: post
+  #       cors: true

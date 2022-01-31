@@ -41,6 +41,7 @@ async function itemInsertintoExcel(parentDataArr, childDataArr, forecastDetailsA
         });
         // Add Worksheets to the workbook
         // let worksheet = workbook.addWorksheet('Parent Data');
+        let isDataAvailable = 0;
         if(childDataArr.length > 0){
             let worksheet1 = workbook.addWorksheet('Child Data');
             //Tab 2 headers
@@ -48,6 +49,7 @@ async function itemInsertintoExcel(parentDataArr, childDataArr, forecastDetailsA
             worksheet1.cell(1, 2).string('Request Params').style(style);
             worksheet1.cell(1, 3).string('Response').style(style);
             generateExcelSheet(childDataArr, worksheet1, styleForData)
+            isDataAvailable = 1;
         }
         if(forecastDetailsArr.length > 0){
             let worksheet2 = workbook.addWorksheet('Forecast Data');
@@ -57,6 +59,7 @@ async function itemInsertintoExcel(parentDataArr, childDataArr, forecastDetailsA
             worksheet2.cell(1, 3).string('Response').style(style);
 
             generateExcelSheet(forecastDetailsArr, worksheet2, styleForData)
+            isDataAvailable = 1;
         }
         //Tab 1 headers
         // worksheet.cell(1, 1).string('Status').style(style);
@@ -69,8 +72,9 @@ async function itemInsertintoExcel(parentDataArr, childDataArr, forecastDetailsA
 
         // generateExcelSheet(parentDataArr, worksheet, styleForData);
         
-        
+        if(isDataAvailable){
         workbook.write('/tmp/salesforceFailedRecords.xlsx');
+        }
 
     } catch (e) {
         console.error("itemInsert in Excel Error: ", e);

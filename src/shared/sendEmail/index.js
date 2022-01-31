@@ -4,7 +4,7 @@ const sftpClient = require('ssh2').Client;
 // const { resolve } = require('path');
 
 
-async function sendEmail(mailSubject,body) {
+async function sendEmail(mailSubject, body) {
     return new Promise((resolve, reject) => {
         try {
             const TRANSPORTER = nodemailer.createTransport({
@@ -30,11 +30,21 @@ async function sendEmail(mailSubject,body) {
                 },
                 (error, info) => {
                     if (error) {
-                        fs.unlinkSync('/tmp/salesforceFailedRecords.xlsx')
-                        console.error("Email Error occurred : \n" + JSON.stringify(err));
-                        reject(err)
+                        try {
+                            fs.unlinkSync('/tmp/salesforceFailedRecords.xlsx')
+                            console.error("Email Error occurred : \n" + JSON.stringify(error));
+                        }
+                        catch (errorEmail) {
+                            console.error(errorEmail);
+                        }
+                        resolve(error)
                     }
-                    fs.unlinkSync('/tmp/salesforceFailedRecords.xlsx')
+                    try {
+                        fs.unlinkSync('/tmp/salesforceFailedRecords.xlsx')
+                    }
+                    catch (errorEmail) {
+                        // console.error(errorEmail);
+                    }
                     console.info("Email sent : \n", JSON.stringify(info));
                     resolve(info)
                 }
@@ -47,7 +57,7 @@ async function sendEmail(mailSubject,body) {
     })
 }
 
-async function sendProcessedRecordsEmail(mailSubject,body) {
+async function sendProcessedRecordsEmail(mailSubject, body) {
     return new Promise((resolve, reject) => {
         try {
             const TRANSPORTER = nodemailer.createTransport({
@@ -67,8 +77,8 @@ async function sendProcessedRecordsEmail(mailSubject,body) {
                 },
                 (error, info) => {
                     if (error) {
-                        console.error("Email Error occurred : \n" + JSON.stringify(err));
-                        reject(err)
+                        console.error("Email Error occurred : \n" + JSON.stringify(error));
+                        resolve(error)
                     }
                     console.info("Email sent : \n", JSON.stringify(info));
                     resolve(info)
@@ -81,5 +91,5 @@ async function sendProcessedRecordsEmail(mailSubject,body) {
         }
     })
 }
-module.exports = { sendEmail,sendProcessedRecordsEmail }
+module.exports = { sendEmail, sendProcessedRecordsEmail }
 

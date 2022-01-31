@@ -30,7 +30,7 @@ async function createChildAccount(OWNER_USER_ID_BASE_URL,CHILD_ACCOUNT_URL, chil
                         return [resChildAccountId,true];
                     }
                 } catch (newError) {
-                    // console.error("Error : \n" + newError);
+                    console.error("*************Error : \n" + newError);
                     return [JSON.stringify(newError),false];
                     // return send_response(401, newError);
                 }
