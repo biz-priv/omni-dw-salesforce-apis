@@ -33,7 +33,6 @@ functions:
 stepFunctions:
   stateMachines:
     rds-salesforce-state-machine: ${file(config/SalesforceApisStateMachine.yml):stateMachine}
-    # dynamo-salesforce-state-machine: ${file(config/ProcessFailedSalesforceRecordsSTM.yml):stateMachine}
 
 plugins:
   - serverless-offline
