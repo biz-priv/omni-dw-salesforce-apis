@@ -16,16 +16,15 @@ async function fetchSalesForecastRecordId(options, selecselectedSaleForcastIdEnd
         let forecastRecordsDataURl = SALES_FORECAST_RECORD_ID_URL + selecselectedSaleForcastIdEndpoint;
         // console.info("Sales Forecast Id Url : \n", JSON.stringify(forecastRecordsDataURl));
         let forecastRecordsData = await axios.get(forecastRecordsDataURl, options);
-        // console.info("Sales Forecast Id Response : \n", forecastRecordsData);
         let forecastId = forecastRecordsData['data']['Id'];
+        // console.info("Sales Forecast Id Response : \n", JSON.stringify(forecastId));
         if(typeof forecastId != 'undefined'){
-            // console.info("Forecast ID : \n", forecastId);
             return [forecastId,true];
         }
         return ["Unable to fetch forecast ID",false];
         // return (validateForecastRecordsData(forecastRecordsData) ? forecastRecordsData['data']['Id'] : null);
     } catch (error) {
-        console.error("Error from sale forecast record fetch id api: ", error);
+        console.error("Error From Sales Forecast Record Id Api: ", error);
         return [JSON.stringify(error), false];
     }
 }
@@ -46,13 +45,13 @@ async function upsertSalesForecastDetails(options, customerUniqueId, childAccoun
         let upsertSalesForecastDetailUrl = UPSERT_SALES_FORECAST_DETAILS_BASE_URL + customerUniqueId;
         
         let upsertSalesForecastDetail = await axios.patch(upsertSalesForecastDetailUrl, upsertSalesForecastDetailBody, options);
-        // console.info("Upsert Sales Forcast URL : \n" + upsertSalesForecastDetailUrl);
-        // console.info("Upsert Sales Forcast Body : \n" + JSON.stringify(upsertSalesForecastDetailBody));
-        // console.info("Upsert Sales Forcast Response : \n" + JSON.stringify(upsertSalesForecastDetail.data));
+        // console.info("Upsert Sales Forecast Url : \n" + upsertSalesForecastDetailUrl);
+        // console.info("Upsert Sales Forecast Body : \n" + JSON.stringify(upsertSalesForecastDetailBody));
+        // console.info("Upsert Sales Forecast Response : \n" + JSON.stringify(upsertSalesForecastDetail.data));
         return [upsertSalesForecastDetail.data,true,upsertSalesForecastDetailBody];
     }
     catch (error) {
-        console.error("Error from sale forecast api: " + JSON.stringify(error.response.data));
+        console.error("Error From Sales Forecast Api: " + JSON.stringify(error.response.data));
         return [JSON.stringify(error.response.data),false,upsertSalesForecastDetailBody];
     }
 }

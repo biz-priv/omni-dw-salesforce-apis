@@ -26,5 +26,5 @@ stateMachine:
       SuccessState:
         Type: Succeed
   events:
-    - schedule: cron(0 14,2 * * ? *)
+    - schedule: cron(0 12,2 * * ? *)
     # - schedule: rate(9 hour)

@@ -5,14 +5,11 @@ const {getOwnerID,getCrmAdminOwnerID} = require('./getOwnerId');
 async function createChildAccount(OWNER_USER_ID_BASE_URL,CHILD_ACCOUNT_URL, childAccountBody, options) {
     let resChildAccountId = "";
     try {
-        // console.info(CHILD_ACCOUNT_URL);
-        // console.info(JSON.stringify(childAccountBody));
         const createChildAccountReq = await axios.patch(CHILD_ACCOUNT_URL, childAccountBody, options);
-        // console.info("Child Account Response: \n", createChildAccountReq.data);
         resChildAccountId = createChildAccountReq.data.id;
         return [resChildAccountId,true];
     } catch (error) {
-        console.error("****Error : \n" + error);
+        console.error("Create Child Account Error : \n" + error);
         if (error.response.data.length >= 1) {
             let errorResponse = error.response.data[0];
             let childAccountId = checkDuplicateEntry(errorResponse);
@@ -30,7 +27,7 @@ async function createChildAccount(OWNER_USER_ID_BASE_URL,CHILD_ACCOUNT_URL, chil
                         return [resChildAccountId,true];
                     }
                 } catch (newError) {
-                    console.error("*************Error : \n" + newError);
+                    console.error("Find Existing Child Account Error : \n" + newError);
                     return [JSON.stringify(newError),false];
                     // return send_response(401, newError);
                 }
@@ -42,7 +39,7 @@ async function createChildAccount(OWNER_USER_ID_BASE_URL,CHILD_ACCOUNT_URL, chil
                         childAccountBody['OwnerId'] = crmAdminOwnerID;
                         return await createChildAccount(OWNER_USER_ID_BASE_URL,CHILD_ACCOUNT_URL, childAccountBody, options);
                     }
-                console.error("**********Failed Error : \n", error.response.data[0]);
+                console.error("Failed Error : \n", error.response.data[0]);
                 return [JSON.stringify(error.response.data[0]),false];
             }
         }
