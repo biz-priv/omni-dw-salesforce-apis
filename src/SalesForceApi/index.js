@@ -152,21 +152,21 @@ module.exports.handler = async (event) => {
         //2022-01-27T12:15:13.621Z
         for (let key in result) {
             owner = result[key]['owner'] ? encodeURIComponent(result[key]['owner']) : "crm admin";
-            billingStreet = result[key]['addr1'] ? encodeURIComponent(result[key]['addr1']) : "Not Available";
-            city = result[key]['city'] ? encodeURIComponent(result[key]['city']) : "Not Available";
-            state = result[key]['state'] ? encodeURIComponent(result[key]['state']) : "Not Available";
-            country = result[key]['country'] ? encodeURIComponent(result[key]['country']) : "Not Available";
-            postalCode = result[key]['zip'] ? encodeURIComponent(result[key]['zip']) : "Not Available";
+            billingStreet = result[key]['addr1'] ? result[key]['addr1'] : "Not Available";
+            city = result[key]['city'] ? result[key]['city'] : "Not Available";
+            state = result[key]['state'] ? result[key]['state'] : "Not Available";
+            country = result[key]['country'] ? result[key]['country'] : "Not Available";
+            postalCode = result[key]['zip'] ? result[key]['zip'] : "Not Available";
             parentName = result[key]['parent'] ? encodeURIComponent(result[key]['parent']) : "Not Available";
-            sourceSystem = result[key]['source system'] ? encodeURIComponent(result[key]['source system']) : "Not Available";
+            sourceSystem = result[key]['source system'] ? result[key]['source system'] : "Not Available";
             sourceSystem = sourceSystem.trim();
-            billToNumber = result[key]['bill to number'] ? encodeURIComponent(result[key]['bill to number']) : "Not Available";
-            childName = result[key]['bill to customer'] ? encodeURIComponent(result[key]['bill to customer']) : "Not Available";
-            controllingCustomerNumber = result[key]['cntrolling customer number'] ? encodeURIComponent(result[key]['cntrolling customer number']) : "Not Available";
-            year = result[key]['year'] ? encodeURIComponent(result[key]['year']) : "Not Available";
-            month = result[key]['month'] ? encodeURIComponent(result[key]['month']) : "Not Available";
-            totalCharge = result[key]['total charge'] ? encodeURIComponent(result[key]['total charge']) : "Not Available";
-            totalCost = result[key]['total cost'] ? encodeURIComponent(result[key]['total cost']) : "Not Available";
+            billToNumber = result[key]['bill to number'] ? result[key]['bill to number'] : "Not Available";
+            childName = result[key]['bill to customer'] ? result[key]['bill to customer'] : "Not Available";
+            controllingCustomerNumber = result[key]['cntrolling customer number'] ? result[key]['cntrolling customer number'] : "Not Available";
+            year = result[key]['year'] ? result[key]['year'] : "Not Available";
+            month = result[key]['month'] ? result[key]['month'] : "Not Available";
+            totalCharge = result[key]['total charge'] ? result[key]['total charge'] : "Not Available";
+            totalCost = result[key]['total cost'] ? result[key]['total cost'] : "Not Available";
             currentLoadCreateDate = result[key]['load_create_date'];
             currentLoadUpdateDate = result[key]['load_update_date'];
             // if (currentLoadCreateDate != null && currentLoadUpdateDate == null) {
