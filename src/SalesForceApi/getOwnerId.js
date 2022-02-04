@@ -1,7 +1,7 @@
 const axios = require('axios');
 async function getOwnerID(OWNER_USER_ID_BASE_URL, options, owner) {
     try {
-        let ownerIdUrl = OWNER_USER_ID_BASE_URL + owner;
+        let ownerIdUrl = OWNER_USER_ID_BASE_URL + owner.replace(/\//g,'%2F').replace(/\\/g,'%5C');
         console.info("Owner Id Url : \n", JSON.stringify(ownerIdUrl));
         const OWNER_USER_ID = await axios.get(ownerIdUrl, options);
         let ownerIdRes = OWNER_USER_ID['data']['Id'];

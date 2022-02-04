@@ -151,13 +151,14 @@ module.exports.handler = async (event) => {
         //2022-01-24T11:06:50.428Z
         //2022-01-27T12:15:13.621Z
         for (let key in result) {
-            owner = result[key]['owner'] ? encodeURIComponent(result[key]['owner']) : "crm admin";
+            owner = result[key]['owner'] ? result[key]['owner'] : "crm admin";
+            //owner = result[key]['owner'] ? encodeURIComponent(result[key]['owner']) : "crm admin";
             billingStreet = result[key]['addr1'] ? result[key]['addr1'] : "Not Available";
             city = result[key]['city'] ? result[key]['city'] : "Not Available";
             state = result[key]['state'] ? result[key]['state'] : "Not Available";
             country = result[key]['country'] ? result[key]['country'] : "Not Available";
             postalCode = result[key]['zip'] ? result[key]['zip'] : "Not Available";
-            parentName = result[key]['parent'] ? encodeURIComponent(result[key]['parent']) : "Not Available";
+            parentName = result[key]['parent'] ? result[key]['parent'] : "Not Available";
             sourceSystem = result[key]['source system'] ? result[key]['source system'] : "Not Available";
             sourceSystem = sourceSystem.trim();
             billToNumber = result[key]['bill to number'] ? result[key]['bill to number'] : "Not Available";
@@ -186,7 +187,7 @@ module.exports.handler = async (event) => {
                 "RecordTypeId": PARENT_ACCOUNT_RECORD_TYPE_ID,
             }
 
-            const PARENT_ACCOUNT_URL = PARENT_ACCOUNT_BASE_URL + parentName;
+            const PARENT_ACCOUNT_URL = PARENT_ACCOUNT_BASE_URL + parentName.replace(/\//g,'%2F').replace(/\\/g,'%5C');
             const [createParentRes, parentIdStatus] = await createParentAccount(PARENT_ACCOUNT_URL, PARENT_ACCOUNT_PARAMS, options);
             if (parentIdStatus == false) {
                 let parentResData = createParentRes;
