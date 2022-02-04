@@ -4,7 +4,7 @@ provider:
   name: aws
   runtime: nodejs14.x
   region: ${opt:region, 'us-east-1'}
-  stage: ${opt:stage, 'dev'}
+  stage: ${opt:stage, 'prod'}
   memorySize: 128 
   timeout: 30
   role : ${ssm:/omni-dw/${self:provider.stage}/lambda/role}
