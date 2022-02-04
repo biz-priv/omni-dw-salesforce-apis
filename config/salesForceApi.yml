@@ -1,0 +1,51 @@
+SalesForceApi:
+  handler: src/SalesForceApi/index.handler
+  timeout: 900
+  memorySize: 512 
+  layers:
+    - { Ref: CommonLibsLambdaLayer }  
+  environment:
+    DEFAULT_AWS: ${self:provider.region}
+    DB_PORT: ${ssm:/omni-dw/salesforce/${self:provider.stage}/db/port}
+    DB_HOST: ${ssm:/omni-dw/salesforce/${self:provider.stage}/db/host~true}
+    DB_PASSWORD: ${ssm:/omni-dw/salesforce/${self:provider.stage}/db/password~true}   
+    DB_DATABASE: ${ssm:/omni-dw/salesforce/${self:provider.stage}/corsair/db/name~true}
+    DB_USER: ${ssm:/omni-dw/salesforce/${self:provider.stage}/db/user~true}
+    CHILD_RECORD_TYPE_ID: ${ssm:/omni-dw/salesforce/${self:provider.stage}/recordId/child}
+    PARENT_RECORDS_TYPE_ID: ${ssm:/omni-dw/salesforce/${self:provider.stage}/recordId/parent}
+    PARENT_ACCOUNT_DYNAMO_TABLE: ${ssm:/omni-dw/salesforce/${self:provider.stage}/dynamoDb/table/parentAccount}
+    CHILD_ACCOUNT_DYNAMO_TABLE: ${ssm:/omni-dw/salesforce/${self:provider.stage}/dynamoDb/table/childAccount}
+    SALE_FORECAST_DYNAMO_TABLE: ${ssm:/omni-dw/salesforce/${self:provider.stage}/dynamoDb/table/salesForecast}
+    FETCH_CHILD_ACCOUNT_BASE_URL: ${ssm:/omni-dw/salesforce/${self:provider.stage}/baseUrl/fetchChild}
+    TOKEN_BASE_URL: ${ssm:/omni-dw/salesforce/${self:provider.stage}/baseUrl/token}
+    PARENT_ACCOUNT_BASE_URL: ${ssm:/omni-dw/salesforce/${self:provider.stage}/baseUrl/parent}
+    OWNER_USER_ID_BASE_URL: ${ssm:/omni-dw/salesforce/${self:provider.stage}/baseUrl/ownerUserId}
+    CHILD_ACCOUNT_BASE_URL: ${ssm:/omni-dw/salesforce/${self:provider.stage}/baseUrl/child}
+    SALES_FORECAST_RECORD_ID_BASE_URL: ${ssm:/omni-dw/salesforce/${self:provider.stage}/baseUrl/salesForecastRecordId}
+    UPSERT_SALES_FORECAST_DETAILS_BASE_URL: ${ssm:/omni-dw/salesforce/${self:provider.stage}/baseUrl/salesForecastDetails}
+    TIMESTAMP_SSM_PARAMETER: /omni-dw/salesforce/${self:provider.stage}/db/tables/latest/timestamp
+    SMTP_HOST: ${ssm:/omni-dw/salesforce/${self:provider.stage}/smtp/host~true}
+    SMTP_PORT: ${ssm:/omni-dw/salesforce/${self:provider.stage}/smtp/port~true}
+    SMTP_USER: ${ssm:/omni-dw/salesforce/${self:provider.stage}/smtp/user~true}
+    SMTP_PASSWORD: ${ssm:/omni-dw/salesforce/${self:provider.stage}/smtp/password~true}
+    SMTP_SENDER: ${ssm:/omni-dw/salesforce/${self:provider.stage}/smtp/sender~true}
+    SMTP_RECEIVER: ${ssm:/omni-dw/salesforce/${self:provider.stage}/smtp/receiver~true}
+    S3_BUCKET_NAME: ${ssm:/omni-dw/salesforce/${self:provider.stage}/s3/bucket-name~true}
+
+  package:
+    individually: true
+    include:
+        - 'src/SalesForceApi/**'
+        - 'src/shared/**'
+  vpc:
+    securityGroupIds:
+      - ${ssm:/omni-dw/${self:provider.stage}/lambda/sgId}
+    subnetIds:
+      - ${ssm:/omni-dw/${self:provider.stage}/lambda/subnetA}
+      
+  # events:
+  #   # - schedule: cron(0 16 * * ? *)
+  #   - http:
+  #       path: salesForceApi
+  #       method: post
+  #       cors: true

@@ -1,0 +1,30 @@
+stateMachine:
+  name: omni-dw-salesForce-${self:provider.stage}-apis-state-machine
+  definition:
+    Comment: "State machine for salesforce Apis integration"
+    StartAt: PublishEvents
+    States:
+      PublishEvents:
+        Type: Task
+        Resource: 
+          Fn::GetAtt: ["SalesForceApi","Arn"]
+        Next: EndChoice
+      EndChoice:
+        Type: Choice
+        Choices:
+          - Variable: $.hasMoreData
+            StringEquals: "false"
+            Next: ProcessFailedRecordsEvent
+          - Variable: $.hasMoreData
+            StringEquals: "true"
+            Next: PublishEvents
+      ProcessFailedRecordsEvent:
+        Type: Task
+        Resource: 
+          Fn::GetAtt: ["ProcessFailedRecords","Arn"]
+        Next: SuccessState
+      SuccessState:
+        Type: Succeed
+  events:
+    - schedule: cron(0 12,2 * * ? *)
+    # - schedule: rate(9 hour)

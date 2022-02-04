@@ -1,0 +1,50 @@
+service: omni-dw-salesforce-apis
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+  region: ${opt:region, 'us-east-1'}
+  stage: ${opt:stage, 'dev'}
+  memorySize: 128 
+  timeout: 30
+  role : ${ssm:/omni-dw/${self:provider.stage}/lambda/role}
+  environment:
+    stage: ${self:provider.stage}
+
+custom:
+  prune:
+    automatic: true
+    number: 3
+
+package:
+  individually: true
+  excludeDevDependencies: false
+  exclude:
+    - 'node_modules/**'
+    - 'config/**'
+    - 'src/**'
+    - '*.*'
+
+functions:
+    - ${file(config/salesForceApi.yml)}
+    - ${file(config/createDynamoTables.yml)}
+    - ${file(config/ProcessFailedRecords.yml)}
+
+stepFunctions:
+  stateMachines:
+    rds-salesforce-state-machine: ${file(config/SalesforceApisStateMachine.yml):stateMachine}
+
+plugins:
+  - serverless-offline
+  - serverless-prune-plugin
+  - serverless-step-functions
+  - serverless-pseudo-parameters
+  
+layers:
+  commonLibs:
+    path: lib
+    compatibleRuntimes:
+      - nodejs14.x
+    package:      
+      include:
+        - node_modules/**
