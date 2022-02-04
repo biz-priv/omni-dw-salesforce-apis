@@ -5,12 +5,12 @@ SalesForceApi:
   layers:
     - { Ref: CommonLibsLambdaLayer }  
   environment:
-    DB_PORT: ${ssm:/omni-dw/${self:provider.stage}/db/port}
-    DB_HOST: ${ssm:/omni-dw/${self:provider.stage}/db/host~true}
-    DB_PASSWORD: ${ssm:/omni-dw/${self:provider.stage}/db/password~true}   
-    DB_DATABASE: ${ssm:/omni-dw/${self:provider.stage}/corsair/db/name~true}
-    DB_USER: ${ssm:/omni-dw/${self:provider.stage}/db/user~true}
     DEFAULT_AWS: ${self:provider.region}
+    DB_PORT: ${ssm:/omni-dw/salesforce/${self:provider.stage}/db/port}
+    DB_HOST: ${ssm:/omni-dw/salesforce/${self:provider.stage}/db/host~true}
+    DB_PASSWORD: ${ssm:/omni-dw/salesforce/${self:provider.stage}/db/password~true}   
+    DB_DATABASE: ${ssm:/omni-dw/salesforce/${self:provider.stage}/corsair/db/name~true}
+    DB_USER: ${ssm:/omni-dw/salesforce/${self:provider.stage}/db/user~true}
     CHILD_RECORD_TYPE_ID: ${ssm:/omni-dw/salesforce/${self:provider.stage}/recordId/child}
     PARENT_RECORDS_TYPE_ID: ${ssm:/omni-dw/salesforce/${self:provider.stage}/recordId/parent}
     PARENT_ACCOUNT_DYNAMO_TABLE: ${ssm:/omni-dw/salesforce/${self:provider.stage}/dynamoDb/table/parentAccount}
@@ -24,12 +24,12 @@ SalesForceApi:
     SALES_FORECAST_RECORD_ID_BASE_URL: ${ssm:/omni-dw/salesforce/${self:provider.stage}/baseUrl/salesForecastRecordId}
     UPSERT_SALES_FORECAST_DETAILS_BASE_URL: ${ssm:/omni-dw/salesforce/${self:provider.stage}/baseUrl/salesForecastDetails}
     TIMESTAMP_SSM_PARAMETER: /omni-dw/salesforce/${self:provider.stage}/db/tables/latest/timestamp
-    SMTP_HOST: ${ssm:/omni-dw/${self:provider.stage}/smtp/host~true}
-    SMTP_PORT: ${ssm:/omni-dw/${self:provider.stage}/smtp/port~true}
-    SMTP_USER: ${ssm:/omni-dw/${self:provider.stage}/smtp/user~true}
-    SMTP_PASSWORD: ${ssm:/omni-dw/${self:provider.stage}/smtp/password~true}
-    SMTP_SENDER: ${ssm:/omni-dw/${self:provider.stage}/smtp/sender~true}
-    SMTP_RECEIVER: ${ssm:/omni-dw/${self:provider.stage}/smtp/receiver~true}
+    SMTP_HOST: ${ssm:/omni-dw/salesforce/${self:provider.stage}/smtp/host~true}
+    SMTP_PORT: ${ssm:/omni-dw/salesforce/${self:provider.stage}/smtp/port~true}
+    SMTP_USER: ${ssm:/omni-dw/salesforce/${self:provider.stage}/smtp/user~true}
+    SMTP_PASSWORD: ${ssm:/omni-dw/salesforce/${self:provider.stage}/smtp/password~true}
+    SMTP_SENDER: ${ssm:/omni-dw/salesforce/${self:provider.stage}/smtp/sender~true}
+    SMTP_RECEIVER: ${ssm:/omni-dw/salesforce/${self:provider.stage}/smtp/receiver~true}
     S3_BUCKET_NAME: ${ssm:/omni-dw/salesforce/${self:provider.stage}/s3/bucket-name~true}
 
   package:

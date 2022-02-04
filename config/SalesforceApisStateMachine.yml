@@ -1,5 +1,5 @@
 stateMachine:
-  name: omni-dw-salesForce-apis-state-machine
+  name: omni-dw-salesForce-${self:provider.stage}-apis-state-machine
   definition:
     Comment: "State machine for salesforce Apis integration"
     StartAt: PublishEvents

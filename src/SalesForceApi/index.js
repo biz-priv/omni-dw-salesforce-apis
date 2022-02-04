@@ -274,7 +274,7 @@ module.exports.handler = async (event) => {
 
 
                 // console.info("Child Account Params : \n" + JSON.stringify(childAccountBody));
-                const [createChildAccountRes, createChildExecutionStatus] = await createChildAccount(OWNER_USER_ID_BASE_URL, CHILD_ACCOUNT_URL, childAccountBody, options);
+                const [createChildAccountRes, createChildExecutionStatus] = await createChildAccount(OWNER_USER_ID_BASE_URL, CHILD_ACCOUNT_URL, childAccountBody, options,FETCH_CHILD_ACCOUNT_BASE_URL);
                 // console.info("createChildAccountRes :\n", createChildAccountRes);
                 let childDynamoData = {
                     PutRequest: {
